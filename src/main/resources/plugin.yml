@@ -1,0 +1,31 @@
+name: 'PaperFrame'
+version: 0.0.1
+author: 'cth451'
+description: 'Commands to manipulate item frames'
+main: me.cth451.paperframe.PaperFramePlugin
+api-version: 1.18
+commands:
+  framehighlight:
+    description: "Toggle highlight status of frames nearby"
+    usage: "/framehighlight"
+    permission: "paperframe.highlight"
+    aliases:
+      - fh
+  frameshowhide:
+    description: "Toggle invisible status of the frame you are looking at"
+    usage: "/frameshowhide"
+    permission: "paperframe.showhide"
+    aliases:
+      - fsh
+permissions:
+  paperframe.*:
+    description: "Gives access to all PaperFrame commands"
+    children:
+      paperframe.highlight: true
+      paperframe.showhide: true
+  paperframe.highlight:
+    description: "Allow use of /framehighlight and /fh"
+    default: op
+  paperframe.showhide:
+    description: "Allow use of /frameshowhide and /fsh"
+    default: op
