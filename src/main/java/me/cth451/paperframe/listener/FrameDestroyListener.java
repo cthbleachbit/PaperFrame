@@ -1,6 +1,5 @@
 package me.cth451.paperframe.listener;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

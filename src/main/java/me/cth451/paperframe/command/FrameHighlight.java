@@ -1,20 +1,11 @@
 package me.cth451.paperframe.command;
 
 import me.cth451.paperframe.PaperFramePlugin;
-import me.cth451.paperframe.util.Drawing;
-import org.bukkit.Color;
-import org.bukkit.Particle;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.LinkedList;
-
-import static me.cth451.paperframe.PaperFramePlugin.SELECTION_RANGE;
 
 /**
  * highlight the frames in range even when they are hidden, and turn off in 5 seconds
@@ -32,24 +23,23 @@ public class FrameHighlight implements CommandExecutor {
 			return false;
 		}
 
-		LinkedList<ItemFrame> framesHighlighted = new LinkedList<>();
-		for (Entity entity : player.getNearbyEntities(SELECTION_RANGE, SELECTION_RANGE, SELECTION_RANGE)) {
-			if (!(entity instanceof ItemFrame)) {
-				continue;
+		boolean enabling;
+		synchronized (PaperFramePlugin.activeHighlightUsers) {
+			if (PaperFramePlugin.activeHighlightUsers.contains(player.getUniqueId())) {
+				PaperFramePlugin.activeHighlightUsers.remove(player.getUniqueId());
+				enabling = false;
+			} else {
+				PaperFramePlugin.activeHighlightUsers.add(player.getUniqueId());
+				enabling = true;
 			}
-			framesHighlighted.add((ItemFrame) entity);
 		}
 
-		if (framesHighlighted.isEmpty()) {
-			return true;
+		if (enabling) {
+			player.sendMessage("Item frame highlighting enabled");
+		} else {
+			player.sendMessage("Item frame highlighting disabled");
 		}
 
-		Particle.DustOptions options = new Particle.DustOptions(Color.WHITE, 1.0F);
-		for (ItemFrame frame : framesHighlighted) {
-			Drawing.scheduleStickyDraw(this.plugin, frame, options, 20, 10);
-		}
-
-		player.sendMessage(String.format("Highlighting %s item frames", framesHighlighted.size()));
 		return true;
 	}
 }

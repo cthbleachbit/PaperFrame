@@ -4,7 +4,6 @@ import me.cth451.paperframe.PaperFramePlugin;
 import me.cth451.paperframe.util.Drawing;
 import org.bukkit.Color;
 import org.bukkit.Particle;
-import org.bukkit.block.data.type.Bed;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -14,10 +13,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
-import static me.cth451.paperframe.PaperFramePlugin.SELECTION_RANGE;
-
 public class FrameShowHide implements CommandExecutor {
 	private PaperFramePlugin plugin;
+	public static final int SELECTION_RANGE = 5;
 
 	public FrameShowHide(PaperFramePlugin plugin) {
 		this.plugin = plugin;
