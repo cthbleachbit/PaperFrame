@@ -49,7 +49,7 @@ public class ActivePlayerUpdate implements Runnable {
 			if (frame == null) {
 				continue;
 			}
-			Drawing.drawBoundingBox(frame.getBoundingBox(), frame.getWorld(), option);
+			Drawing.drawBoundingBox(frame, option);
 		}
 	}
 }
