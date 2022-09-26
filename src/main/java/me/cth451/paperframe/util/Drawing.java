@@ -2,10 +2,13 @@ package me.cth451.paperframe.util;
 
 import me.cth451.paperframe.PaperFramePlugin;
 import org.bukkit.*;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 import org.bukkit.Particle.DustOptions;
+
+import java.util.function.Function;
 
 public class Drawing {
 
@@ -18,12 +21,9 @@ public class Drawing {
 	 * @param repeatFor     number of occurences to draw
 	 * @param intervalTicks interval between two draw events in ticks
 	 */
-	public static void scheduleStickyDraw(PaperFramePlugin plugin, ItemFrame frame, DustOptions options, int repeatFor, long intervalTicks) {
-		Runnable draw = () -> {
-			Drawing.drawBoundingBox(frame, options);
-		};
+	public static void scheduleStickyDraw(PaperFramePlugin plugin, Runnable drawCall, int repeatFor, long intervalTicks) {
 		for (int i = 0; i < repeatFor; i++) {
-			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, draw, i * intervalTicks);
+			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, drawCall, i * intervalTicks);
 		}
 	}
 
@@ -49,12 +49,14 @@ public class Drawing {
 	/**
 	 * Draw bounding box of an item frame
 	 *
-	 * @param frame   item frame to draw
+	 * @param entity  item frame to draw
 	 * @param options redstone dust particle options
 	 */
-	public static void drawBoundingBox(ItemFrame frame, DustOptions options) {
-		BoundingBox box = frame.getBoundingBox().clone();
-		World world = frame.getWorld();
+	public static void drawBoundingBox(Entity entity, DustOptions options) {
+		drawBoundingBox(entity.getBoundingBox(), entity.getWorld(), options);
+	}
+
+	public static void drawBoundingBox(BoundingBox box, World world, DustOptions options) {
 		double mx = box.getMinX();
 		double my = box.getMinY();
 		double mz = box.getMinZ();

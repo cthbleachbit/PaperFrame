@@ -1,40 +1,43 @@
 package me.cth451.paperframe.command;
 
+import com.destroystokyo.paper.block.TargetBlockInfo;
 import me.cth451.paperframe.PaperFramePlugin;
 import me.cth451.paperframe.util.Drawing;
 import org.bukkit.Color;
 import org.bukkit.Particle;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
+import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 public class FrameShowHide implements CommandExecutor {
-	private PaperFramePlugin plugin;
 	public static final int SELECTION_RANGE = 5;
+	private final PaperFramePlugin plugin;
 
 	public FrameShowHide(PaperFramePlugin plugin) {
 		this.plugin = plugin;
 	}
 
-	@Override
-	public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
-		if (!(commandSender instanceof Player player)) {
-			return false;
-		}
-
-		// Check whether the player is looking at an item frame
+	/**
+	 * Find ItemFrame by minimizing angle difference
+	 *
+	 * @param player player requesting this search
+	 * @return the ItemFrame cloest to the player crosshair, or null if nothing is in range
+	 */
+	private ItemFrame findFrameByAngle(@NotNull Player player) {
 		ItemFrame frame = null;
 		float bestAngle = 0.2f;
 
 		Vector playerLookDir = player.getEyeLocation().getDirection();
 		Vector playerEyeLoc = player.getEyeLocation().toVector();
 
-		for (Entity entity : player.getNearbyEntities(SELECTION_RANGE,SELECTION_RANGE,SELECTION_RANGE)) {
+		for (Entity entity : player.getNearbyEntities(SELECTION_RANGE, SELECTION_RANGE, SELECTION_RANGE)) {
 			if (!(entity instanceof ItemFrame)) {
 				continue;
 			}
@@ -48,22 +51,64 @@ public class FrameShowHide implements CommandExecutor {
 			}
 		}
 
+		return frame;
+	}
+
+	private ItemFrame findFrameByTargetedEntity(@NotNull Player player) {
+		Entity entity = player.getTargetEntity(SELECTION_RANGE);
+		if (entity == null) {
+			return null;
+		}
+
+		if (!(entity instanceof ItemFrame frame)) {
+			return null;
+		}
+
+		return frame;
+	}
+
+	private ItemFrame findFrameByTargetedBlock(@NotNull Player player) {
+		TargetBlockInfo targetedBlock = player.getTargetBlockInfo(SELECTION_RANGE);
+		if (targetedBlock == null) {
+			return null;
+		}
+		Block frontBlock = targetedBlock.getBlock().getRelative(targetedBlock.getBlockFace());
+		BoundingBox box = new BoundingBox(frontBlock.getX(), frontBlock.getY(), frontBlock.getZ(),
+		                                  frontBlock.getX() + 1, frontBlock.getY() + 1, frontBlock.getZ() + 1);
+
+
+		for (Entity entity : player.getNearbyEntities(SELECTION_RANGE, SELECTION_RANGE, SELECTION_RANGE)) {
+			if (!(entity instanceof ItemFrame frame)) {
+				continue;
+			}
+			if (box.contains(frame.getLocation().toVector())) {
+				return frame;
+			}
+		}
+		Runnable drawCall = () -> Drawing.drawBoundingBox(box, player.getWorld(),
+		                                                  new Particle.DustOptions(Color.WHITE, 1.0f));
+		Drawing.scheduleStickyDraw(this.plugin, drawCall, 5, 10);
+		return null;
+	}
+
+	@Override
+	public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
+		if (!(commandSender instanceof Player player)) {
+			return false;
+		}
+
+		// Check whether the player is looking at an item frame
+		ItemFrame frame = findFrameByTargetedBlock(player);
+
 		if (frame == null) {
 			// No item frames in range
-			player.sendMessage("You need to look at an item frame to hide/unhide it");
+			player.sendMessage("Can't find an item frame where you are looking");
 		} else {
 			boolean isVisible = frame.isVisible();
-			Particle.DustOptions options = null;
 			frame.setVisible(!isVisible);
-			if (isVisible) {
-				player.sendMessage("Frame hidden");
-				options = new Particle.DustOptions(Color.RED, 1.0f);
-			} else {
-				player.sendMessage("Frame unhidden");
-				options = new Particle.DustOptions(Color.GREEN, 1.0f);
-			}
-			ItemFrame finalFrame = frame;
-			Drawing.scheduleStickyDraw(this.plugin, frame, options, 3, 10);
+			final Particle.DustOptions options = new Particle.DustOptions(isVisible ? Color.RED : Color.GREEN, 1.0f);
+			player.sendMessage(isVisible ? "Frame hidden" : "Frame revealed");
+			Drawing.scheduleStickyDraw(this.plugin, () -> Drawing.drawBoundingBox(frame, options), 3, 10);
 		}
 		return true;
 	}
