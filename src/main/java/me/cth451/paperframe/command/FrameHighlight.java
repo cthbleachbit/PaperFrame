@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
  * highlight the frames in range even when they are hidden, and turn off in 5 seconds
  */
 public class FrameHighlight implements CommandExecutor {
-	private PaperFramePlugin plugin;
+	private final PaperFramePlugin plugin;
 
 	public FrameHighlight(PaperFramePlugin plugin) {
 		this.plugin = plugin;

@@ -14,7 +14,8 @@ import java.util.UUID;
 public class PaperFramePlugin extends JavaPlugin {
 	private FrameDestroyListener frameDestroyListener = null;
 	private int activePlayerUpdateTaskId = -1;
-	public static final Set<UUID> activeHighlightUsers = new HashSet<UUID>();;
+	public static final Set<UUID> activeHighlightUsers = new HashSet<UUID>();
+	;
 
 	private void registerCommands() {
 		this.getCommand("framehighlight").setExecutor(new FrameHighlight(this));
@@ -27,7 +28,8 @@ public class PaperFramePlugin extends JavaPlugin {
 		frameDestroyListener = new FrameDestroyListener();
 		this.getServer().getPluginManager().registerEvents(frameDestroyListener, this);
 		// Start Active player update
-		activePlayerUpdateTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new ActivePlayerUpdate(this), 0, 10);
+		activePlayerUpdateTaskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new ActivePlayerUpdate(this),
+		                                                                           0, 10);
 	}
 
 	@Override
