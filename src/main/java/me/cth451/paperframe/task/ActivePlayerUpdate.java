@@ -29,7 +29,9 @@ public class ActivePlayerUpdate implements Runnable {
 
 	@Override
 	public void run() {
+		// Need to use hash set to ensure duplicate frames are not added
 		HashSet<ItemFrame> frames = new HashSet<>();
+
 		synchronized (PaperFramePlugin.activeHighlightUsers) {
 			for (Map.Entry<UUID, HighlightOptions> entry : PaperFramePlugin.activeHighlightUsers.entrySet()) {
 				UUID playerID = entry.getKey();
@@ -45,13 +47,11 @@ public class ActivePlayerUpdate implements Runnable {
 				List<Entity> nearby = player.getNearbyEntities(range, range, range);
 				frames.addAll(nearby.stream()
 				                    .filter((e) -> e instanceof ItemFrame frame && (!hiddenOnly || !frame.isVisible()))
-				                    .map((e) -> (ItemFrame) e).toList());
+				                    .map((e) -> (ItemFrame) e)
+				                    .toList());
 			}
 		}
 
-
-		for (ItemFrame frame : frames) {
-			Drawing.drawBoundingBox(frame, option);
-		}
+		frames.forEach((frame) -> Drawing.drawBoundingBox(frame, option));
 	}
 }
