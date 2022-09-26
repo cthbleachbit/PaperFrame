@@ -17,7 +17,7 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
 public class FrameShowHide implements CommandExecutor {
-	public static final int SELECTION_RANGE = 5;
+	public static final int SELECTION_RANGE = 6;
 	private final PaperFramePlugin plugin;
 
 	public FrameShowHide(PaperFramePlugin plugin) {
@@ -68,8 +68,8 @@ public class FrameShowHide implements CommandExecutor {
 	}
 
 	private ItemFrame findFrameByTargetedBlock(@NotNull Player player) {
-		TargetBlockInfo targetedBlock = player.getTargetBlockInfo(SELECTION_RANGE);
-		if (targetedBlock == null) {
+		TargetBlockInfo targetedBlock = player.getTargetBlockInfo(SELECTION_RANGE, TargetBlockInfo.FluidMode.NEVER);
+		if (targetedBlock == null || targetedBlock.getBlock().isEmpty()) {
 			return null;
 		}
 		Block frontBlock = targetedBlock.getBlock().getRelative(targetedBlock.getBlockFace());
@@ -81,7 +81,8 @@ public class FrameShowHide implements CommandExecutor {
 			if (!(entity instanceof ItemFrame frame)) {
 				continue;
 			}
-			if (box.contains(frame.getLocation().toVector())) {
+			if (box.contains(frame.getLocation().toVector()) && frame.getAttachedFace()
+			                                                         .getOppositeFace() == targetedBlock.getBlockFace()) {
 				return frame;
 			}
 		}
