@@ -1,6 +1,7 @@
 package me.cth451.paperframe.command;
 
 import me.cth451.paperframe.PaperFramePlugin;
+import me.cth451.paperframe.util.HighlightOptions;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -23,19 +24,29 @@ public class FrameHighlight implements CommandExecutor {
 			return false;
 		}
 
+		HighlightOptions options = new HighlightOptions(false, HighlightOptions.HIGHLIGHT_RANGE);
+		for (String arg : argv1) {
+			if (arg.equals("-h")) {
+				options.hiddenOnly = true;
+			}
+		}
 		boolean enabling;
 		synchronized (PaperFramePlugin.activeHighlightUsers) {
-			if (PaperFramePlugin.activeHighlightUsers.contains(player.getUniqueId())) {
+			if (PaperFramePlugin.activeHighlightUsers.containsKey(player.getUniqueId())) {
 				PaperFramePlugin.activeHighlightUsers.remove(player.getUniqueId());
 				enabling = false;
 			} else {
-				PaperFramePlugin.activeHighlightUsers.add(player.getUniqueId());
+				PaperFramePlugin.activeHighlightUsers.put(player.getUniqueId(), options);
 				enabling = true;
 			}
 		}
 
 		if (enabling) {
-			player.sendMessage("Item frame highlighting enabled");
+			if (options.hiddenOnly) {
+				player.sendMessage("Item frame highlighting enabled - hidden frames only");
+			} else {
+				player.sendMessage("Item frame highlighting enabled");
+			}
 		} else {
 			player.sendMessage("Item frame highlighting disabled");
 		}

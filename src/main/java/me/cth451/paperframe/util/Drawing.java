@@ -1,14 +1,13 @@
 package me.cth451.paperframe.util;
 
 import me.cth451.paperframe.PaperFramePlugin;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Particle;
+import org.bukkit.Particle.DustOptions;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.ItemFrame;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
-import org.bukkit.Particle.DustOptions;
-
-import java.util.function.Function;
 
 public class Drawing {
 
@@ -16,8 +15,7 @@ public class Drawing {
 	 * Schedule repeating drawing routines for finite times
 	 *
 	 * @param plugin        instance of this plugin
-	 * @param frame         item frame to draw
-	 * @param options       redstone dust particle options
+	 * @param drawCall      drawing call
 	 * @param repeatFor     number of occurences to draw
 	 * @param intervalTicks interval between two draw events in ticks
 	 */
@@ -27,7 +25,7 @@ public class Drawing {
 		}
 	}
 
-	/**
+	/*record e() {*
 	 * Spawn particle along a straight line between two points
 	 *
 	 * @param p1      the starting point

@@ -6,8 +6,10 @@ main: me.cth451.paperframe.PaperFramePlugin
 api-version: 1.18
 commands:
   framehighlight:
-    description: "Toggle highlight status of frames within 10-block radius"
-    usage: "/framehighlight"
+    description: |
+      Toggle highlight status of frames within 10-block radius
+      -h = hidden ones only
+    usage: "/framehighlight [-h]"
     permission: "paperframe.highlight"
     aliases:
       - fh
