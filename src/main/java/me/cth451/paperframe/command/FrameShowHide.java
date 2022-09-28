@@ -13,7 +13,13 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 public class FrameShowHide implements CommandExecutor {
+	/**
+	 * Range to find any frames to show/hide
+	 */
 	public static final int SELECTION_RANGE = 6;
+	/**
+	 * Ref to plugin instance itself
+	 */
 	private final PaperFramePlugin plugin;
 
 	public FrameShowHide(PaperFramePlugin plugin) {

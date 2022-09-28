@@ -2,9 +2,11 @@ package me.cth451.paperframe.util;
 
 import me.cth451.paperframe.PaperFramePlugin;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Particle.DustOptions;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
@@ -25,7 +27,7 @@ public class Drawing {
 		}
 	}
 
-	/*record e() {*
+	/**
 	 * Spawn particle along a straight line between two points
 	 *
 	 * @param p1      the starting point
@@ -55,10 +57,24 @@ public class Drawing {
 	}
 
 	/**
+	 * Draw wireframe outline of a block
+	 *
+	 * @param block   the block to draw
+	 * @param options redstone dust particle options
+	 */
+	public static void drawBoundingBox(Block block, DustOptions options) {
+		Location loc = block.getLocation();
+		drawBoundingBox(
+				new BoundingBox(loc.getX(), loc.getY(), loc.getZ(), loc.getX() + 1, loc.getY() + 1, loc.getZ() + 1),
+				block.getWorld(), options);
+	}
+
+	/**
 	 * Draw a given bounding box in the given world
-	 * @param box         the bounding box to draw
-	 * @param world       the world to draw in - note that {@link BoundingBox} does not have ref to World
-	 * @param options     redstone dust options
+	 *
+	 * @param box     the bounding box to draw
+	 * @param world   the world to draw in - note that {@link BoundingBox} does not have ref to World
+	 * @param options redstone dust options
 	 */
 	public static void drawBoundingBox(BoundingBox box, World world, DustOptions options) {
 		double mx = box.getMinX();
