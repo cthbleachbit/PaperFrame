@@ -31,32 +31,64 @@ public class FrameHighlight implements CommandExecutor {
 		HighlightOptions options = new HighlightOptions(false, this.plugin.getConfig().getDouble(
 				"commands.framehighlight.default_radius", HighlightOptions.DEFAULT_RADIUS));
 		Iterator<String> itr = Arrays.stream(argv1).iterator();
+
 		while (itr.hasNext()) {
 			String arg = itr.next();
-			if (arg.equals("-h")) {
-				options.hiddenOnly = true;
-			} else if (arg.equals("-r")) {
-				if (itr.hasNext()) {
-					try {
-						options.range = Double.parseDouble(itr.next());
-					} catch (NumberFormatException e) {
-						player.sendMessage("Invalid radius specified after -r " + e.getMessage());
+			if (arg.startsWith("--")) {
+				if (arg.equals("--hidden")) {
+					options.hiddenOnly = true;
+				} else if (arg.equals("--radius")) {
+					if (itr.hasNext()) {
+						try {
+							options.range = Double.parseDouble(itr.next());
+						} catch (NumberFormatException e) {
+							player.sendMessage("Invalid radius specified after -r " + e.getMessage());
+							return false;
+						}
+					} else {
+						player.sendMessage("No radius specified after -r");
 						return false;
 					}
 				} else {
-					player.sendMessage("No radius specified after -r");
+					player.sendMessage("Unrecognized flag " + arg);
 					return false;
 				}
-			} else if (arg.startsWith("-r")) {
-				try {
-					options.range = Double.parseDouble(arg.substring(2));
-				} catch (NumberFormatException e) {
-					player.sendMessage("Invalid radius specified after -r");
-					return false;
+			} else if (arg.startsWith("-")) {
+				// Strip away leading '-'
+				arg = arg.substring(1);
+
+				while (!arg.isEmpty()) {
+					if (arg.startsWith("h")) {
+						arg = arg.substring(1);
+						options.hiddenOnly = true;
+					} else if (arg.startsWith("r")) {
+						arg = arg.substring(1);
+						if (arg.isEmpty()) {
+							if (itr.hasNext()) {
+								try {
+									options.range = Double.parseDouble(itr.next());
+								} catch (NumberFormatException e) {
+									player.sendMessage("Invalid radius specified after -r " + e.getMessage());
+									return false;
+								}
+							} else {
+								player.sendMessage("No radius specified after -r");
+								return false;
+							}
+						} else {
+							try {
+								options.range = Double.parseDouble(arg);
+								arg = "";
+							} catch (NumberFormatException e) {
+								player.sendMessage("Invalid radius specified after -r " + e.getMessage());
+								return false;
+							}
+						}
+					} else {
+						player.sendMessage("Unrecognized flag " + arg);
+						return false;
+					}
 				}
-			} else {
-				player.sendMessage("Unknown argument " + arg);
-				return false;
 			}
 		}
 
