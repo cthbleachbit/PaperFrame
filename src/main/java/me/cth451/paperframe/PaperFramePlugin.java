@@ -1,11 +1,9 @@
 package me.cth451.paperframe;
 
 import me.cth451.paperframe.command.*;
-import me.cth451.paperframe.listener.*;
 import me.cth451.paperframe.task.*;
 import me.cth451.paperframe.util.HighlightOptions;
 import org.bukkit.Bukkit;
-import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;
@@ -13,7 +11,6 @@ import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class PaperFramePlugin extends JavaPlugin {
-	private FrameDestroyListener frameDestroyListener = null;
 
 	// protect access to activeUpdateTask
 	private final ReentrantLock activeUpdateTaskLock = new ReentrantLock();
@@ -64,13 +61,10 @@ public class PaperFramePlugin extends JavaPlugin {
 	public void onEnable() {
 		this.registerCommands();
 		this.saveDefaultConfig();
-		frameDestroyListener = new FrameDestroyListener();
-		this.getServer().getPluginManager().registerEvents(frameDestroyListener, this);
 	}
 
 	@Override
 	public void onDisable() {
-		HandlerList.unregisterAll(frameDestroyListener);
 		this.stopPlayerUpdate();
 	}
 }
