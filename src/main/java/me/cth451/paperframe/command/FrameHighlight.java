@@ -24,7 +24,7 @@ public class FrameHighlight implements CommandExecutor {
 	@Override
 	public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String argv0, @NotNull String[] argv1) {
 		if (!(commandSender instanceof Player player)) {
-			commandSender.sendMessage("This command can only be used by an player");
+			commandSender.sendMessage("This command can only be used by a player");
 			return false;
 		}
 

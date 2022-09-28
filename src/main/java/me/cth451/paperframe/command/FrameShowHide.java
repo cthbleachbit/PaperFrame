@@ -86,6 +86,8 @@ public class FrameShowHide implements CommandExecutor {
 				return frame;
 			}
 		}
+
+		// If no frames found...
 		Runnable drawCall = () -> Drawing.drawBoundingBox(box, player.getWorld(),
 		                                                  new Particle.DustOptions(Color.WHITE, 1.0f));
 		Drawing.scheduleStickyDraw(this.plugin, drawCall, 5, 10);
@@ -95,7 +97,7 @@ public class FrameShowHide implements CommandExecutor {
 	@Override
 	public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
 		if (!(commandSender instanceof Player player)) {
-			commandSender.sendMessage("This command can only be used by an player");
+			commandSender.sendMessage("This command can only be used by a player");
 			return false;
 		}
 
@@ -104,7 +106,7 @@ public class FrameShowHide implements CommandExecutor {
 
 		if (frame == null) {
 			// No item frames in range
-			player.sendMessage("Can't find an item frame where you are looking");
+			player.sendMessage("Can't find an item frame on the block you are looking at");
 		} else {
 			boolean isVisible = frame.isVisible();
 			frame.setVisible(!isVisible);
