@@ -7,9 +7,10 @@ api-version: 1.18
 commands:
   framehighlight:
     description: |
-      Toggle highlight status of frames within 10-block radius
+      Toggle highlight status of item frames near you
       -h = hidden ones only
-    usage: "/framehighlight [-h]"
+      -r N = highlight within radius N
+    usage: "/framehighlight [-h] [-r radius]"
     permission: "paperframe.highlight"
     aliases:
       - fh
@@ -19,15 +20,25 @@ commands:
     permission: "paperframe.showhide"
     aliases:
       - fsh
+  frameconfigreload:
+    description: "Reload PaperFrame plugin config.yml"
+    usage: "/frameconfigreload"
+    permission: "paperframe.configreload"
+    aliases:
+      - fcr
 permissions:
   paperframe.*:
     description: "Gives access to all PaperFrame commands"
     children:
       paperframe.highlight: true
       paperframe.showhide: true
+      paperframe.configreload: true
   paperframe.highlight:
     description: "Allow use of /framehighlight and /fh"
-    default: op
+    default: true
   paperframe.showhide:
     description: "Allow use of /frameshowhide and /fsh"
+    default: op
+  paperframe.configreload:
+    description: "Allow use of /frame/configreload and /fcr"
     default: op
