@@ -79,6 +79,7 @@ public class FrameHighlight implements CommandExecutor {
 					String.format("Highlighting %s frames within %s radius",
 					              options.hiddenOnly ? "hidden" : "all",
 					              options.range));
+			this.plugin.startPlayerUpdate();
 		} else {
 			player.sendMessage("Item frame highlighting disabled");
 		}

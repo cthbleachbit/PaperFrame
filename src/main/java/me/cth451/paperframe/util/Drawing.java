@@ -45,7 +45,7 @@ public class Drawing {
 	}
 
 	/**
-	 * Draw bounding box of an item frame
+	 * Draw bounding box of a entity
 	 *
 	 * @param entity  item frame to draw
 	 * @param options redstone dust particle options
@@ -54,6 +54,12 @@ public class Drawing {
 		drawBoundingBox(entity.getBoundingBox(), entity.getWorld(), options);
 	}
 
+	/**
+	 * Draw a given bounding box in the given world
+	 * @param box         the bounding box to draw
+	 * @param world       the world to draw in - note that {@link BoundingBox} does not have ref to World
+	 * @param options     redstone dust options
+	 */
 	public static void drawBoundingBox(BoundingBox box, World world, DustOptions options) {
 		double mx = box.getMinX();
 		double my = box.getMinY();

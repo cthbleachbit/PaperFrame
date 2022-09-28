@@ -22,7 +22,6 @@ public class ActivePlayerUpdate implements Runnable {
 	private final PaperFramePlugin plugin;
 	public static final Particle.DustOptions option = new Particle.DustOptions(Color.WHITE, 1.0f);
 
-
 	public ActivePlayerUpdate(PaperFramePlugin plugin) {
 		this.plugin = plugin;
 	}
@@ -39,6 +38,7 @@ public class ActivePlayerUpdate implements Runnable {
 				double range = entry.getValue().range;
 
 				Player player = Bukkit.getPlayer(playerID);
+				// Just in case that a player has left
 				if (player == null) {
 					PaperFramePlugin.activeHighlightUsers.remove(playerID);
 					continue;
@@ -49,6 +49,11 @@ public class ActivePlayerUpdate implements Runnable {
 				                    .filter((e) -> e instanceof ItemFrame frame && (!hiddenOnly || !frame.isVisible()))
 				                    .map((e) -> (ItemFrame) e)
 				                    .toList());
+			}
+
+			if (PaperFramePlugin.activeHighlightUsers.isEmpty()) {
+				// Stop background update when no players are requesting service
+				this.plugin.stopPlayerUpdate();
 			}
 		}
 
