@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -16,12 +17,11 @@ public class PaperFramePlugin extends JavaPlugin {
 	private final ReentrantLock activeUpdateTaskLock = new ReentrantLock();
 	private int activeUpdateTask = -1;
 	public static final HashMap<UUID, HighlightOptions> activeHighlightUsers = new HashMap<>();
-	;
 
 	private void registerCommands() {
-		this.getCommand("framehighlight").setExecutor(new FrameHighlight(this));
-		this.getCommand("frameshowhide").setExecutor(new FrameShowHide(this));
-		this.getCommand("frameconfigreload").setExecutor(new FrameConfigReload(this));
+		Objects.requireNonNull(this.getCommand("framehighlight")).setExecutor(new FrameHighlight(this));
+		Objects.requireNonNull(this.getCommand("frameshowhide")).setExecutor(new FrameShowHide(this));
+		Objects.requireNonNull(this.getCommand("frameconfigreload")).setExecutor(new FrameConfigReload(this));
 	}
 
 	public void startPlayerUpdate() {

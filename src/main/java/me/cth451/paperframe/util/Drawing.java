@@ -47,7 +47,7 @@ public class Drawing {
 	}
 
 	/**
-	 * Draw bounding box of a entity
+	 * Draw bounding box of an entity
 	 *
 	 * @param entity  item frame to draw
 	 * @param options redstone dust particle options
