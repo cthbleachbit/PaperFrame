@@ -1,8 +1,7 @@
 package me.cth451.paperframe.task;
 
 import me.cth451.paperframe.PaperFramePlugin;
-import me.cth451.paperframe.util.Drawing;
-import me.cth451.paperframe.util.HighlightOptions;
+import me.cth451.paperframe.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Particle;
@@ -18,11 +17,11 @@ import java.util.UUID;
 /**
  * For all active frame highlight users, collect the set of nearby frames, draw particles on them.
  */
-public class ActivePlayerUpdate implements Runnable {
+public class FrameHighlightTask implements Runnable {
 	private final PaperFramePlugin plugin;
 	public static final Particle.DustOptions option = new Particle.DustOptions(Color.WHITE, 1.0f);
 
-	public ActivePlayerUpdate(PaperFramePlugin plugin) {
+	public FrameHighlightTask(PaperFramePlugin plugin) {
 		this.plugin = plugin;
 	}
 

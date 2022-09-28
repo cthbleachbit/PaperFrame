@@ -1,10 +1,8 @@
 package me.cth451.paperframe;
 
-import me.cth451.paperframe.command.FrameConfigReload;
-import me.cth451.paperframe.command.FrameHighlight;
-import me.cth451.paperframe.command.FrameShowHide;
-import me.cth451.paperframe.listener.FrameDestroyListener;
-import me.cth451.paperframe.task.ActivePlayerUpdate;
+import me.cth451.paperframe.command.*;
+import me.cth451.paperframe.listener.*;
+import me.cth451.paperframe.task.*;
 import me.cth451.paperframe.util.HighlightOptions;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
@@ -35,7 +33,7 @@ public class PaperFramePlugin extends JavaPlugin {
 		{
 			activeUpdateTaskLock.lock();
 			if (activeUpdateTask == -1) {
-				activeUpdateTask = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new ActivePlayerUpdate(this),
+				activeUpdateTask = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new FrameHighlightTask(this),
 				                                                                   0, 13);
 				started = true;
 			}
