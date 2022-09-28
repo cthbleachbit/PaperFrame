@@ -54,6 +54,9 @@ public class FrameHighlight implements CommandExecutor {
 					player.sendMessage("Invalid radius specified after -r");
 					return false;
 				}
+			} else {
+				player.sendMessage("Unknown argument " + arg);
+				return false;
 			}
 		}
 
