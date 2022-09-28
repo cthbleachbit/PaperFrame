@@ -70,10 +70,7 @@ public class PaperFramePlugin extends JavaPlugin {
 
 	@Override
 	public void onDisable() {
-		super.onDisable();
 		HandlerList.unregisterAll(frameDestroyListener);
-		if (activeUpdateTask != -1) {
-			Bukkit.getScheduler().cancelTask(activeUpdateTask);
-		}
+		this.stopPlayerUpdate();
 	}
 }

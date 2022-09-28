@@ -18,7 +18,7 @@ public class Drawing {
 	 *
 	 * @param plugin        instance of this plugin
 	 * @param drawCall      drawing call
-	 * @param repeatFor     number of occurences to draw
+	 * @param repeatFor     number of occurrences to draw
 	 * @param intervalTicks interval between two draw events in ticks
 	 */
 	public static void scheduleStickyDraw(PaperFramePlugin plugin, Runnable drawCall, int repeatFor, long intervalTicks) {
