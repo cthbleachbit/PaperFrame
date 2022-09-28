@@ -40,7 +40,7 @@ public class PaperFramePlugin extends JavaPlugin {
 			activeUpdateTaskLock.unlock();
 		}
 		if (started) {
-			Bukkit.getConsoleSender().sendMessage("[PaperFrame] Highlighting update task started");
+			getLogger().info("Frame Highlight Task started");
 		}
 	}
 
@@ -56,7 +56,7 @@ public class PaperFramePlugin extends JavaPlugin {
 			activeUpdateTaskLock.unlock();
 		}
 		if (stopped) {
-			Bukkit.getConsoleSender().sendMessage("[PaperFrame] Highlighting update task stopped");
+			getLogger().info("Frame Highlight Task stopped");
 		}
 	}
 
