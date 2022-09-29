@@ -55,10 +55,10 @@ public class FrameHighlight implements CommandExecutor {
 		}
 		options.hiddenOnly = (boolean) parsed.get("hidden");
 
-		if (options.range > this.plugin.getConfig()
-		                               .getDouble("commands.framehighlight.max_radius", HighlightOptions.MAX_RADIUS)) {
-			options.range = this.plugin.getConfig()
-			                           .getDouble("commands.framehighlight.max_radius", HighlightOptions.MAX_RADIUS);
+		double confMaxRadius = this.plugin.getConfig()
+		                                  .getDouble("commands.framehighlight.max_radius", HighlightOptions.MAX_RADIUS);
+		if (options.range > confMaxRadius) {
+			options.range = confMaxRadius;
 		}
 
 		boolean enabling;
