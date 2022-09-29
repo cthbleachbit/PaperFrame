@@ -2,6 +2,10 @@ package me.cth451.paperframe.command;
 
 import me.cth451.paperframe.PaperFramePlugin;
 import me.cth451.paperframe.util.HighlightOptions;
+import me.cth451.paperframe.util.unixargv.FlagType;
+import me.cth451.paperframe.util.unixargv.UnixArgv;
+import me.cth451.paperframe.util.unixargv.UnixFlagSpec;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -9,7 +13,8 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
-import java.util.Iterator;
+import java.util.HashMap;
+import java.util.Optional;
 
 /**
  * highlight the frames in range even when they are hidden, and turn off in 5 seconds
@@ -17,8 +22,16 @@ import java.util.Iterator;
 public class FrameHighlight implements CommandExecutor {
 	private final PaperFramePlugin plugin;
 
+	private final static UnixFlagSpec[] arguments = {
+			new UnixFlagSpec("hidden", Optional.of('h'), FlagType.EXIST, "hidden"),
+			new UnixFlagSpec("radius", Optional.of('r'), FlagType.PARAMETRIZE, "radius", Double::parseDouble),
+	};
+
+	private final UnixArgv argvParser;
+
 	public FrameHighlight(PaperFramePlugin plugin) {
 		this.plugin = plugin;
+		argvParser = new UnixArgv(Arrays.asList(arguments));
 	}
 
 	@Override
@@ -30,67 +43,19 @@ public class FrameHighlight implements CommandExecutor {
 
 		HighlightOptions options = new HighlightOptions(false, this.plugin.getConfig().getDouble(
 				"commands.framehighlight.default_radius", HighlightOptions.DEFAULT_RADIUS));
-		Iterator<String> itr = Arrays.stream(argv1).iterator();
 
-		while (itr.hasNext()) {
-			String arg = itr.next();
-			if (arg.startsWith("--")) {
-				if (arg.equals("--hidden")) {
-					options.hiddenOnly = true;
-				} else if (arg.equals("--radius")) {
-					if (itr.hasNext()) {
-						try {
-							options.range = Double.parseDouble(itr.next());
-						} catch (NumberFormatException e) {
-							player.sendMessage("Invalid radius specified after -r " + e.getMessage());
-							return false;
-						}
-					} else {
-						player.sendMessage("No radius specified after -r");
-						return false;
-					}
-				} else {
-					player.sendMessage("Unrecognized flag " + arg);
-					return false;
-				}
-			} else if (arg.startsWith("-")) {
-				// Strip away leading '-'
-				arg = arg.substring(1);
-
-				while (!arg.isEmpty()) {
-					if (arg.startsWith("h")) {
-						arg = arg.substring(1);
-						options.hiddenOnly = true;
-					} else if (arg.startsWith("r")) {
-						arg = arg.substring(1);
-						if (arg.isEmpty()) {
-							if (itr.hasNext()) {
-								try {
-									options.range = Double.parseDouble(itr.next());
-								} catch (NumberFormatException e) {
-									player.sendMessage("Invalid radius specified after -r " + e.getMessage());
-									return false;
-								}
-							} else {
-								player.sendMessage("No radius specified after -r");
-								return false;
-							}
-						} else {
-							try {
-								options.range = Double.parseDouble(arg);
-								arg = "";
-							} catch (NumberFormatException e) {
-								player.sendMessage("Invalid radius specified after -r " + e.getMessage());
-								return false;
-							}
-						}
-					} else {
-						player.sendMessage("Unrecognized flag " + arg);
-						return false;
-					}
-				}
-			}
+		HashMap<String, Object> parsed;
+		try {
+			parsed = argvParser.parse(argv1);
+		} catch (IllegalArgumentException e) {
+			player.sendMessage(ChatColor.RED + e.getMessage());
+			return false;
 		}
+
+		if (parsed.containsKey("radius")) {
+			options.range = (double) parsed.get("radius");
+		}
+		options.hiddenOnly = (boolean) parsed.get("hidden");
 
 		if (options.range > this.plugin.getConfig()
 		                               .getDouble("commands.framehighlight.max_radius", HighlightOptions.MAX_RADIUS)) {
@@ -110,13 +75,13 @@ public class FrameHighlight implements CommandExecutor {
 		}
 
 		if (enabling) {
-			player.sendMessage(
-					String.format("Highlighting %s frames within %s radius",
-					              options.hiddenOnly ? "hidden" : "all",
-					              options.range));
+			String enablingMessage = String.format("Highlighting %s frames within %s radius",
+			                                       options.hiddenOnly ? "hidden" : "all",
+			                                       options.range);
+			player.sendMessage(ChatColor.GREEN + enablingMessage);
 			this.plugin.startPlayerUpdate();
 		} else {
-			player.sendMessage("Item frame highlighting disabled");
+			player.sendMessage(ChatColor.GREEN + "Item frame highlighting disabled");
 		}
 
 		return true;
