@@ -2,13 +2,18 @@ package me.cth451.paperframe.util.getopt;
 
 import org.jetbrains.annotations.Contract;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * A GNU getopt style argument parser (reduced functionality - no positional arguments)
  */
 public class ArgvParser {
 	private final Collection<UnixFlagSpec> arguments;
+	private final HashMap<String, UnixFlagSpec> longLookupTable = new HashMap<>();
+	private final HashMap<Character, UnixFlagSpec> shortLookupTable = new HashMap<>();
 
 	/**
 	 * Verify whether the arguments make sense:
@@ -19,13 +24,11 @@ public class ArgvParser {
 	 *
 	 * @throws IllegalArgumentException if the argv specification violates the rules above
 	 */
+	@Contract(mutates = "this")
 	private void verify() throws IllegalArgumentException {
-		long distinctLongOpts =
-				arguments.stream()
-				         .map(UnixFlagSpec::longArg)
-				         .distinct()
-				         .count();
-		if (distinctLongOpts != arguments.size()) {
+		// Populate lookup structure and count distinct long options
+		arguments.forEach((arg) -> longLookupTable.put(arg.longArg(), arg));
+		if (longLookupTable.size() != arguments.size()) {
 			throw new IllegalArgumentException("Duplicated long argument names detected");
 		}
 
@@ -34,14 +37,11 @@ public class ArgvParser {
 				arguments.stream()
 				         .filter((arg) -> arg.shortArg() > 0)
 				         .count();
-		// count distinct shorthands used in the list
-		long distinctShorthands =
-				arguments.stream()
-				         .map(UnixFlagSpec::shortArg)
-				         .filter(character -> character > 0)
-				         .distinct()
-				         .count();
-		if (flagsWithShorthands != distinctShorthands) {
+		// Populate lookup structure and count distinct short options
+		arguments.stream()
+		         .filter((arg) -> arg.shortArg() > 0)
+		         .forEach((arg) -> shortLookupTable.put(arg.shortArg(), arg));
+		if (flagsWithShorthands != shortLookupTable.size()) {
 			throw new IllegalArgumentException("Duplicated shorthands detected");
 		}
 
@@ -74,33 +74,30 @@ public class ArgvParser {
 	 * - or maps to the parameter supplied to that flag as a String.
 	 * This method does not modify internal states and should be safe to call concurrently.
 	 *
-	 * @param argv1p list of arguments from argv[1] and on
+	 * @param argv1p ordered list of arguments from argv[1] and on
 	 * @return mapping of parsed arguments and parameters
 	 * @throws IllegalArgumentException if the input string array contains unrecognized options
 	 */
 	@Contract(pure = true)
-	public HashMap<String, Object> parse(String[] argv1p) throws IllegalArgumentException {
+	public HashMap<String, Object> parse(List<String> argv1p) throws IllegalArgumentException {
 		// Create defaulted existence flags
 		HashMap<String, Object> ret = new HashMap<>();
 		arguments.stream()
 		         .filter((arg) -> arg.type() == UnixFlagSpec.FlagType.EXIST)
 		         .forEach((arg) -> ret.put(arg.destination(), false));
 
-		Iterator<String> itr = Arrays.stream(argv1p).iterator();
+		Iterator<String> itr = argv1p.iterator();
 
 		while (itr.hasNext()) {
 			String arg = itr.next();
 			if (arg.startsWith("--")) {
+				// Long argument - Strip away leading "--"
 				arg = arg.substring(2);
-				String finalArg = arg;
-				Optional<UnixFlagSpec> optFlagSpec = arguments.stream()
-				                                           .filter((flag) -> flag.longArg().equals(finalArg))
-				                                           .findFirst();
-				if (optFlagSpec.isEmpty()) {
+				if (!longLookupTable.containsKey(arg)) {
 					throw new IllegalArgumentException("Unrecognized long option --" + arg);
 				}
 
-				UnixFlagSpec flagSpec = optFlagSpec.get();
+				UnixFlagSpec flagSpec = longLookupTable.get(arg);
 				switch (flagSpec.type()) {
 					case EXIST -> ret.put(flagSpec.destination(), true);
 					case PARAMETRIZE -> {
@@ -123,18 +120,15 @@ public class ArgvParser {
 				arg = arg.substring(1);
 
 				while (!arg.isEmpty()) {
+					// Consume one character
 					char s = arg.charAt(0);
 					arg = arg.substring(1);
-					Optional<UnixFlagSpec> optFlagSpec =
-							arguments.stream()
-							         .filter((flag) -> (flag.shortArg() > 0 && flag.shortArg() == s))
-							         .findFirst();
 
-					if (optFlagSpec.isEmpty()) {
+					if (!shortLookupTable.containsKey(s)) {
 						throw new IllegalArgumentException("Unrecognized short option -" + s);
 					}
 
-					UnixFlagSpec flagSpec = optFlagSpec.get();
+					UnixFlagSpec flagSpec = shortLookupTable.get(s);
 					switch (flagSpec.type()) {
 						case EXIST -> ret.put(flagSpec.destination(), true);
 						case PARAMETRIZE -> {

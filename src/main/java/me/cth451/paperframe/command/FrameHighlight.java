@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * highlight the frames in range even when they are hidden, and turn off in 5 seconds
@@ -44,7 +45,7 @@ public class FrameHighlight implements CommandExecutor {
 
 		HashMap<String, Object> parsed;
 		try {
-			parsed = argvParser.parse(argv1);
+			parsed = argvParser.parse(List.of(argv1));
 		} catch (IllegalArgumentException e) {
 			player.sendMessage(ChatColor.RED + e.getMessage());
 			return false;
