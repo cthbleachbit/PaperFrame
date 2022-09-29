@@ -15,16 +15,16 @@ class UnixArgvTest {
 
 	@BeforeAll
 	static void setUp() {
-		minemap.add(new UnixFlagSpec("dithering", Optional.of('d'), FlagType.EXIST, "dithering"));
-		minemap.add(new UnixFlagSpec("input", Optional.of('i'), FlagType.PARAMETRIZE, "input"));
-		minemap.add(new UnixFlagSpec("no-gz", Optional.empty(), FlagType.EXIST, "no-gz"));
-		minemap.add(new UnixFlagSpec("output", Optional.of('c'), FlagType.PARAMETRIZE, "output"));
-		minemap.add(new UnixFlagSpec("export", Optional.of('e'), FlagType.PARAMETRIZE, "export"));
-		minemap.add(new UnixFlagSpec("game", Optional.of('g'), FlagType.PARAMETRIZE, "game"));
+		minemap.add(new UnixFlagSpec("dithering", 'd', UnixFlagSpec.FlagType.EXIST, "dithering"));
+		minemap.add(new UnixFlagSpec("input", 'i', UnixFlagSpec.FlagType.PARAMETRIZE, "input"));
+		minemap.add(new UnixFlagSpec("no-gz", (char) 0, UnixFlagSpec.FlagType.EXIST, "no-gz"));
+		minemap.add(new UnixFlagSpec("output", 'c', UnixFlagSpec.FlagType.PARAMETRIZE, "output"));
+		minemap.add(new UnixFlagSpec("export", 'e', UnixFlagSpec.FlagType.PARAMETRIZE, "export"));
+		minemap.add(new UnixFlagSpec("game", 'g', UnixFlagSpec.FlagType.PARAMETRIZE, "game"));
 
-		numerical.add(new UnixFlagSpec("string", Optional.empty(), FlagType.PARAMETRIZE, "string"));
-		numerical.add(new UnixFlagSpec("integer", Optional.empty(), FlagType.PARAMETRIZE, "integer", Integer::parseInt));
-		numerical.add(new UnixFlagSpec("float", Optional.empty(), FlagType.PARAMETRIZE, "float", Float::parseFloat));
+		numerical.add(new UnixFlagSpec("string", (char) 0, UnixFlagSpec.FlagType.PARAMETRIZE, "string"));
+		numerical.add(new UnixFlagSpec("integer", (char) 0, UnixFlagSpec.FlagType.PARAMETRIZE, "integer", Integer::parseInt));
+		numerical.add(new UnixFlagSpec("float", (char) 0, UnixFlagSpec.FlagType.PARAMETRIZE, "float", Float::parseFloat));
 	}
 
 	@Test

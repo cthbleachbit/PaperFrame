@@ -29,13 +29,13 @@ public class UnixArgv {
 		// count flags that has a shorthand defined
 		long flagsWithShorthands =
 				arguments.stream()
-				         .filter((arg) -> arg.shortArg().isPresent())
+				         .filter((arg) -> arg.shortArg() > 0)
 				         .count();
 		// count distinct shorthands used in the list
 		long distinctShorthands =
 				arguments.stream()
-				         .filter((arg) -> arg.shortArg().isPresent())
-				         .map((arg) -> arg.shortArg().get())
+				         .map(UnixFlagSpec::shortArg)
+				         .filter(character -> character > 0)
 				         .distinct()
 				         .count();
 		if (flagsWithShorthands != distinctShorthands) {
@@ -80,7 +80,7 @@ public class UnixArgv {
 		// Create defaulted existence flags
 		HashMap<String, Object> ret = new HashMap<>();
 		arguments.stream()
-		         .filter((arg) -> arg.type() == FlagType.EXIST)
+		         .filter((arg) -> arg.type() == UnixFlagSpec.FlagType.EXIST)
 		         .forEach((arg) -> ret.put(arg.destination(), false));
 
 		Iterator<String> itr = Arrays.stream(argv1p).iterator();
@@ -90,25 +90,26 @@ public class UnixArgv {
 			if (arg.startsWith("--")) {
 				arg = arg.substring(2);
 				String finalArg = arg;
-				Optional<UnixFlagSpec> flagSpec = arguments.stream()
+				Optional<UnixFlagSpec> optFlagSpec = arguments.stream()
 				                                           .filter((flag) -> flag.longArg().equals(finalArg))
 				                                           .findFirst();
-				if (flagSpec.isEmpty()) {
+				if (optFlagSpec.isEmpty()) {
 					throw new IllegalArgumentException("Unrecognized long option --" + arg);
 				}
 
-				switch (flagSpec.get().type()) {
-					case EXIST -> ret.put(flagSpec.get().destination(), true);
+				UnixFlagSpec flagSpec = optFlagSpec.get();
+				switch (flagSpec.type()) {
+					case EXIST -> ret.put(flagSpec.destination(), true);
 					case PARAMETRIZE -> {
 						if (itr.hasNext()) {
 							arg = itr.next();
 							Object transformArg;
 							try {
-								transformArg = flagSpec.get().transform().apply(arg);
+								transformArg = flagSpec.transform().apply(arg);
 							} catch (RuntimeException e) {
 								throw new IllegalArgumentException(e);
 							}
-							ret.put(flagSpec.get().destination(), transformArg);
+							ret.put(flagSpec.destination(), transformArg);
 						} else {
 							throw new IllegalArgumentException("Mandatory parameter required for --" + arg);
 						}
@@ -121,39 +122,40 @@ public class UnixArgv {
 				while (!arg.isEmpty()) {
 					char s = arg.charAt(0);
 					arg = arg.substring(1);
-					Optional<UnixFlagSpec> flagSpec =
+					Optional<UnixFlagSpec> optFlagSpec =
 							arguments.stream()
-							         .filter((flag) -> (flag.shortArg().isPresent() && flag.shortArg().get() == s))
+							         .filter((flag) -> (flag.shortArg() > 0 && flag.shortArg() == s))
 							         .findFirst();
 
-					if (flagSpec.isEmpty()) {
+					if (optFlagSpec.isEmpty()) {
 						throw new IllegalArgumentException("Unrecognized short option -" + s);
 					}
 
-					switch (flagSpec.get().type()) {
-						case EXIST -> ret.put(flagSpec.get().destination(), true);
+					UnixFlagSpec flagSpec = optFlagSpec.get();
+					switch (flagSpec.type()) {
+						case EXIST -> ret.put(flagSpec.destination(), true);
 						case PARAMETRIZE -> {
 							Object transformArg;
+							String localArg;
+
+							// Find the rest of the parameter
 							if (!arg.isEmpty()) {
 								// Parameter is the remainder of the arg string
-								try {
-									transformArg = flagSpec.get().transform().apply(arg);
-								} catch (RuntimeException e) {
-									throw new IllegalArgumentException(e);
-								}
-								ret.put(flagSpec.get().destination(), transformArg);
+								localArg = arg;
 								arg = "";
 							} else if (itr.hasNext()) {
-								String localArg = itr.next();
-								try {
-									transformArg = flagSpec.get().transform().apply(localArg);
-								} catch (RuntimeException e) {
-									throw new IllegalArgumentException(e);
-								}
-								ret.put(flagSpec.get().destination(), transformArg);
+								// Parameter is the next token
+								localArg = itr.next();
 							} else {
 								throw new IllegalArgumentException("Mandatory parameter required for -" + s);
 							}
+
+							try {
+								transformArg = flagSpec.transform().apply(localArg);
+							} catch (RuntimeException e) {
+								throw new IllegalArgumentException(e);
+							}
+							ret.put(flagSpec.destination(), transformArg);
 						}
 					}
 				}

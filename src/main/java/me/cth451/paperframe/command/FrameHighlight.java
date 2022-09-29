@@ -2,7 +2,6 @@ package me.cth451.paperframe.command;
 
 import me.cth451.paperframe.PaperFramePlugin;
 import me.cth451.paperframe.util.HighlightOptions;
-import me.cth451.paperframe.util.unixargv.FlagType;
 import me.cth451.paperframe.util.unixargv.UnixArgv;
 import me.cth451.paperframe.util.unixargv.UnixFlagSpec;
 import org.bukkit.ChatColor;
@@ -23,8 +22,8 @@ public class FrameHighlight implements CommandExecutor {
 	private final PaperFramePlugin plugin;
 
 	private final static UnixFlagSpec[] arguments = {
-			new UnixFlagSpec("hidden", Optional.of('h'), FlagType.EXIST, "hidden"),
-			new UnixFlagSpec("radius", Optional.of('r'), FlagType.PARAMETRIZE, "radius", Double::parseDouble),
+			new UnixFlagSpec("hidden", 'h', UnixFlagSpec.FlagType.EXIST, "hidden"),
+			new UnixFlagSpec("radius", 'r', UnixFlagSpec.FlagType.PARAMETRIZE, "radius", Double::parseDouble),
 	};
 
 	private final UnixArgv argvParser;
