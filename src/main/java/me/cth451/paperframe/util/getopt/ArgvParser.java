@@ -1,10 +1,13 @@
-package me.cth451.paperframe.util.unixargv;
+package me.cth451.paperframe.util.getopt;
 
 import org.jetbrains.annotations.Contract;
 
 import java.util.*;
 
-public class UnixArgv {
+/**
+ * A GNU getopt style argument parser (reduced functionality - no positional arguments)
+ */
+public class ArgvParser {
 	private final Collection<UnixFlagSpec> arguments;
 
 	/**
@@ -58,7 +61,7 @@ public class UnixArgv {
 	 * @param arguments flag specification
 	 * @throws IllegalArgumentException when flags are inconsistent
 	 */
-	public UnixArgv(Collection<UnixFlagSpec> arguments) throws IllegalArgumentException {
+	public ArgvParser(Collection<UnixFlagSpec> arguments) throws IllegalArgumentException {
 		this.arguments = arguments;
 		verify();
 	}

@@ -1,15 +1,14 @@
-package me.cth451.paperframe.util.unixargv;
+package me.cth451.paperframe.util.getopt;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class UnixArgvTest {
+class ArgvParserTest {
 	static HashSet<UnixFlagSpec> minemap = new HashSet<>();;
 	static HashSet<UnixFlagSpec> numerical = new HashSet<>();
 
@@ -29,7 +28,7 @@ class UnixArgvTest {
 
 	@Test
 	void parseValidTest1() {
-		UnixArgv parser = new UnixArgv(minemap);
+		ArgvParser parser = new ArgvParser(minemap);
 		String[] input = {"-d", "-i", "blah", "--game", "1.17"};
 		HashMap<String, Object> parsed = parser.parse(input);
 		// should get 2 EXIST type flag and 2 PARAMETRIZE type flag
@@ -44,7 +43,7 @@ class UnixArgvTest {
 
 	@Test
 	void parseValidTest2() {
-		UnixArgv parser = new UnixArgv(minemap);
+		ArgvParser parser = new ArgvParser(minemap);
 		String[] input = {"-d", "-iblah", "-g1.17"};
 		HashMap<String, Object> parsed = parser.parse(input);
 		// should get 2 EXIST type flag and 2 PARAMETRIZE type flag
@@ -59,21 +58,21 @@ class UnixArgvTest {
 
 	@Test
 	void parseUnknownArgumentsTest1() {
-		UnixArgv parser = new UnixArgv(minemap);
+		ArgvParser parser = new ArgvParser(minemap);
 		String[] input = {"-d", "-iblah", "--random-shit"};
 		assertThrowsExactly(IllegalArgumentException.class, () -> parser.parse(input), "Unrecognized long option --random-shit");
 	}
 
 	@Test
 	void parseUnknownArgumentsTest2() {
-		UnixArgv parser = new UnixArgv(minemap);
+		ArgvParser parser = new ArgvParser(minemap);
 		String[] input = {"-d", "-x", "-iblah", "-r"};
 		assertThrowsExactly(IllegalArgumentException.class, () -> parser.parse(input), "Unrecognized short option -x");
 	}
 
 	@Test
 	void parseValidNumerical() {
-		UnixArgv parser = new UnixArgv(numerical);
+		ArgvParser parser = new ArgvParser(numerical);
 		String[] input = {"--string", "str", "--float", "0.8347", "--integer", "42"};
 		HashMap<String, Object> parsed = parser.parse(input);
 		assertEquals(parsed.size(), 3);
@@ -84,7 +83,7 @@ class UnixArgvTest {
 
 	@Test
 	void parseMalformNumerical() {
-		UnixArgv parser = new UnixArgv(numerical);
+		ArgvParser parser = new ArgvParser(numerical);
 		String[] input = {"--string", "str", "--float", "0.83ddd47", "--integer", "42"};
 		assertThrows(IllegalArgumentException.class, () -> parser.parse(input));
 	}

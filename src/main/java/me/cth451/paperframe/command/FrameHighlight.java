@@ -2,8 +2,8 @@ package me.cth451.paperframe.command;
 
 import me.cth451.paperframe.PaperFramePlugin;
 import me.cth451.paperframe.util.HighlightOptions;
-import me.cth451.paperframe.util.unixargv.UnixArgv;
-import me.cth451.paperframe.util.unixargv.UnixFlagSpec;
+import me.cth451.paperframe.util.getopt.ArgvParser;
+import me.cth451.paperframe.util.getopt.UnixFlagSpec;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -13,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Optional;
 
 /**
  * highlight the frames in range even when they are hidden, and turn off in 5 seconds
@@ -26,11 +25,11 @@ public class FrameHighlight implements CommandExecutor {
 			new UnixFlagSpec("radius", 'r', UnixFlagSpec.FlagType.PARAMETRIZE, "radius", Double::parseDouble),
 	};
 
-	private final UnixArgv argvParser;
+	private final ArgvParser argvParser;
 
 	public FrameHighlight(PaperFramePlugin plugin) {
 		this.plugin = plugin;
-		argvParser = new UnixArgv(Arrays.asList(arguments));
+		argvParser = new ArgvParser(Arrays.asList(arguments));
 	}
 
 	@Override

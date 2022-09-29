@@ -1,4 +1,4 @@
-package me.cth451.paperframe.util.unixargv;
+package me.cth451.paperframe.util.getopt;
 
 import org.jetbrains.annotations.NotNull;
 
