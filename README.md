@@ -1,8 +1,14 @@
 # PaperFrame: Item frame visualization and manipulation
 
-### Synopsis
+## Requirements
 
-##### `/framehighlight [-h] [-r radius]`, `/fh [-h] [-r radius]`
+This plugin has been tested on a paper 1.18.2+ minecraft server. Spigot / bukkit implementations might work as well since this project doesn't use any paper specific API (yet).
+
+Integration with WorldEdit is on the roadmap. What functionality should be exposed from WorldEdit is to be determined.
+
+## Synopsis
+
+### `/framehighlight [-h] [-r radius]`, `/fh [-h] [-r radius]`
 
 Toggles highlighting for frames near the user. White dust particles will outline item frames in a `20^3`, or `(2 x radius)^3` if specified, cuboid space centered around the user.
 
@@ -11,13 +17,13 @@ Toggles highlighting for frames near the user. White dust particles will outline
 
 Requires `paperframe.highlight` permission - granted by default to everyone.
 
-##### `/frameshowhide`, `/fsh`
+### `/frameshowhide`, `/fsh`
 
 Hides or reveals an item frame that is currently attached to the block surface under the cross hair.
 
 Requires `paperframe.showhide` permission - granted by default to everyone.
 
-##### `/frameconfigreload`, `/fcr`
+### `/frameconfigreload`, `/fcr`
 
 Reloads plugin configuration from disk
 
