@@ -15,6 +15,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import static me.cth451.paperframe.util.HighlightOptions.HighlightFilter.*;
+
 /**
  * highlight the frames in range even when they are hidden, and turn off in 5 seconds
  */
@@ -23,6 +25,7 @@ public class FrameHighlight implements CommandExecutor {
 
 	private final static UnixFlagSpec[] arguments = {
 			new UnixFlagSpec("hidden", 'h', UnixFlagSpec.FlagType.EXIST, "hidden"),
+			new UnixFlagSpec("protected", 'p', UnixFlagSpec.FlagType.EXIST, "protected"),
 			new UnixFlagSpec("radius", 'r', UnixFlagSpec.FlagType.PARAMETRIZE, "radius", Double::parseDouble),
 	};
 
@@ -40,7 +43,7 @@ public class FrameHighlight implements CommandExecutor {
 			return false;
 		}
 
-		HighlightOptions options = new HighlightOptions(false, this.plugin.getConfig().getDouble(
+		HighlightOptions options = new HighlightOptions(ALL, this.plugin.getConfig().getDouble(
 				"commands.framehighlight.default_radius", HighlightOptions.DEFAULT_RADIUS));
 
 		HashMap<String, Object> parsed;
@@ -54,7 +57,13 @@ public class FrameHighlight implements CommandExecutor {
 		if (parsed.containsKey("radius")) {
 			options.range = (double) parsed.get("radius");
 		}
-		options.hiddenOnly = (boolean) parsed.get("hidden");
+		if (((boolean) parsed.get("hidden")) && ((boolean) parsed.get("protected"))) {
+			player.sendMessage(ChatColor.RED + "--hidden and --protected must not be used at the same time");
+			return false;
+		}
+
+		options.filter = (boolean) parsed.get("hidden") ? HIDDEN : ((boolean) parsed.get(
+				"protected") ? PROTECTED : ALL);
 
 		double confMaxRadius = this.plugin.getConfig()
 		                                  .getDouble("commands.framehighlight.max_radius", HighlightOptions.MAX_RADIUS);
@@ -75,8 +84,7 @@ public class FrameHighlight implements CommandExecutor {
 
 		if (enabling) {
 			String enablingMessage = String.format("Highlighting %s frames within %s radius",
-			                                       options.hiddenOnly ? "hidden" : "all",
-			                                       options.range);
+			                                       options.filter, options.range);
 			player.sendMessage(ChatColor.GREEN + enablingMessage);
 			this.plugin.startPlayerUpdate();
 		} else {

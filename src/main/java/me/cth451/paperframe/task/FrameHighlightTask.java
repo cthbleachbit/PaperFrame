@@ -33,7 +33,7 @@ public class FrameHighlightTask implements Runnable {
 		synchronized (PaperFramePlugin.activeHighlightUsers) {
 			for (Map.Entry<UUID, HighlightOptions> entry : PaperFramePlugin.activeHighlightUsers.entrySet()) {
 				UUID playerID = entry.getKey();
-				boolean hiddenOnly = entry.getValue().hiddenOnly;
+				HighlightOptions.HighlightFilter filter = entry.getValue().filter;
 				double range = entry.getValue().range;
 
 				Player player = Bukkit.getPlayer(playerID);
@@ -45,7 +45,7 @@ public class FrameHighlightTask implements Runnable {
 
 				List<Entity> nearby = player.getNearbyEntities(range, range, range);
 				frames.addAll(nearby.stream()
-				                    .filter((e) -> e instanceof ItemFrame frame && (!hiddenOnly || !frame.isVisible()))
+				                    .filter((e) -> e instanceof ItemFrame frame && filter.filter(frame))
 				                    .map((e) -> (ItemFrame) e)
 				                    .toList());
 			}
