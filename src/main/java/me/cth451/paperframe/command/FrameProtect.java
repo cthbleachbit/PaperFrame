@@ -47,16 +47,6 @@ public class FrameProtect implements CommandExecutor {
 			player.sendMessage(ChatColor.RED + e.getMessage());
 			return false;
 		}
-
-		if ((boolean) parsed.get("on") == (boolean) parsed.get("off")) {
-			player.sendMessage(ChatColor.RED + "Must specify either --on or --off");
-			return false;
-		}
-
-		// True if protecting, False if un-protecting
-		boolean protecting = (boolean) parsed.get("on");
-		boolean changed = false;
-
 		// Check whether the player is looking at an item frame
 		ItemFrame frame = findFrameByTargetedEntity(player);
 
@@ -66,13 +56,26 @@ public class FrameProtect implements CommandExecutor {
 			return true;
 		}
 
+		if ((boolean) parsed.get("on") && (boolean) parsed.get("off")) {
+			player.sendMessage(ChatColor.RED + "Must specify either --on or --off");
+			return false;
+		} else if (!((boolean) parsed.get("on") || (boolean) parsed.get("off"))) {
+			player.sendMessage("Frame is " + (frame.isInvulnerable() ? "protected" : "unprotected"));
+			return true;
+		}
+
+		// True if protecting, False if un-protecting
+		boolean protecting = (boolean) parsed.get("on");
+		boolean changed = false;
+
 		if (frame.isInvulnerable() != protecting) {
 			frame.setInvulnerable(protecting);
 			changed = true;
 		}
 
 		final Particle.DustOptions options = new Particle.DustOptions(protecting ? Color.GREEN : Color.RED, 1.0f);
-		player.sendMessage(ChatColor.GREEN + "Frame" + (changed ? " " : " is already ") + (protecting ? "protected" : "unprotected"));
+		player.sendMessage(
+				ChatColor.GREEN + "Frame" + (changed ? " " : " is already ") + (protecting ? "protected" : "unprotected"));
 		Drawing.scheduleStickyDraw(this.plugin, () -> Drawing.drawBoundingBox(frame, options), 3, 10);
 		return true;
 	}

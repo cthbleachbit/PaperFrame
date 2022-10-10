@@ -7,10 +7,11 @@ api-version: 1.18
 commands:
   frameprotect:
     description: |
-      Protect / un-protect the item frame you are looking at
+      Protect / un-protect / Check the item frame you are looking at
+      (no arguments) = check protection status
       --on, -1 = turn on protection
       --off, -0 = turn off protection
-    usage: "/frameprotect --on|--off"
+    usage: "/frameprotect [--on|--off]"
     permission: "paperframe.protect"
     aliases:
       - fprotect
@@ -46,7 +47,7 @@ permissions:
       paperframe.configreload: true
   paperframe.protect:
     description: "Allow use of /frameprotect"
-    default: op
+    default: false
   paperframe.highlight:
     description: "Allow use of /framehighlight and /fh"
     default: true
