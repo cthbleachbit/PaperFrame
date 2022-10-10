@@ -1,6 +1,7 @@
 package me.cth451.paperframe;
 
 import me.cth451.paperframe.command.*;
+import me.cth451.paperframe.eventlistener.FrameProtectListener;
 import me.cth451.paperframe.task.*;
 import me.cth451.paperframe.util.HighlightOptions;
 import org.bukkit.Bukkit;
@@ -23,6 +24,10 @@ public class PaperFramePlugin extends JavaPlugin {
 		Objects.requireNonNull(this.getCommand("framehighlight")).setExecutor(new FrameHighlight(this));
 		Objects.requireNonNull(this.getCommand("frameshowhide")).setExecutor(new FrameShowHide(this));
 		Objects.requireNonNull(this.getCommand("frameconfigreload")).setExecutor(new FrameConfigReload(this));
+	}
+
+	private void registerEventListeners() {
+		getServer().getPluginManager().registerEvents(new FrameProtectListener(this), this);
 	}
 
 	public void startPlayerUpdate() {
@@ -61,6 +66,7 @@ public class PaperFramePlugin extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		this.registerCommands();
+		this.registerEventListeners();
 		this.saveDefaultConfig();
 	}
 
