@@ -68,7 +68,7 @@ public class ArgvParser {
 
 	/**
 	 * Parse given list of argv1 and on into key-value pairs.
-	 * If the type of {@link UnixFlagSpec} is EXACT, the resulting destination variable will contain True/False.
+	 * If the type of {@link UnixFlagSpec} is EXIST, the resulting destination variable will contain True/False.
 	 * If the type of {@link UnixFlagSpec} is PARAMETRIZE, the destination variable may
 	 * - either do not exist in the mapping,
 	 * - or maps to the parameter supplied to that flag as a String.
