@@ -5,6 +5,15 @@ description: 'Commands to manipulate item frames'
 main: me.cth451.paperframe.PaperFramePlugin
 api-version: 1.18
 commands:
+  frameprotect:
+    description: |
+      Protect / un-protect the item frame you are looking at
+      --on, -1 = turn on protection
+      --off, -0 = turn off protection
+    usage: "/frameprotect --on|--off"
+    permission: "paperframe.protect"
+    aliases:
+      - fprotect
   framehighlight:
     description: |
       Toggle highlight status of item frames near you
@@ -31,9 +40,13 @@ permissions:
   paperframe.*:
     description: "Gives access to all PaperFrame commands"
     children:
+      paperframe.protect: true
       paperframe.highlight: true
       paperframe.showhide: true
       paperframe.configreload: true
+  paperframe.protect:
+    description: "Allow use of /frameprotect"
+    default: op
   paperframe.highlight:
     description: "Allow use of /framehighlight and /fh"
     default: true

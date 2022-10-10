@@ -19,6 +19,7 @@ public class PaperFramePlugin extends JavaPlugin {
 	public static final HashMap<UUID, HighlightOptions> activeHighlightUsers = new HashMap<>();
 
 	private void registerCommands() {
+		Objects.requireNonNull(this.getCommand("frameprotect")).setExecutor(new FrameProtect(this));
 		Objects.requireNonNull(this.getCommand("framehighlight")).setExecutor(new FrameHighlight(this));
 		Objects.requireNonNull(this.getCommand("frameshowhide")).setExecutor(new FrameShowHide(this));
 		Objects.requireNonNull(this.getCommand("frameconfigreload")).setExecutor(new FrameConfigReload(this));

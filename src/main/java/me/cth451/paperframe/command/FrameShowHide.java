@@ -7,16 +7,13 @@ import org.bukkit.Particle;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import static me.cth451.paperframe.util.Targeting.findFrameByTargetedEntity;
+
 public class FrameShowHide implements CommandExecutor {
-	/**
-	 * Range to find any frames to show/hide
-	 */
-	public static final int SELECTION_RANGE = 6;
 	/**
 	 * Ref to plugin instance itself
 	 */
@@ -24,19 +21,6 @@ public class FrameShowHide implements CommandExecutor {
 
 	public FrameShowHide(PaperFramePlugin plugin) {
 		this.plugin = plugin;
-	}
-
-	private ItemFrame findFrameByTargetedEntity(@NotNull Player player) {
-		Entity entity = player.getTargetEntity(SELECTION_RANGE);
-		if (entity == null) {
-			return null;
-		}
-
-		if (!(entity instanceof ItemFrame frame)) {
-			return null;
-		}
-
-		return frame;
 	}
 
 	@Override
