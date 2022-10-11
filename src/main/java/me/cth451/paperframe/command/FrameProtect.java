@@ -14,9 +14,11 @@ import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import static me.cth451.paperframe.util.FrameProperties.*;
 import static me.cth451.paperframe.util.Targeting.findFrameByTargetedEntity;
 
 public class FrameProtect implements CommandExecutor {
@@ -60,7 +62,8 @@ public class FrameProtect implements CommandExecutor {
 			player.sendMessage(ChatColor.RED + "Must specify either --on or --off");
 			return false;
 		} else if (!((boolean) parsed.get("on") || (boolean) parsed.get("off"))) {
-			player.sendMessage("Frame is " + (frame.isInvulnerable() ? "protected" : "unprotected"));
+			player.sendMessage("Frame is " + (frame.isInvulnerable() ? "protected by " + getProtectedBy(
+					frame) + " at " + getProtectedAt(frame) : "unprotected"));
 			return true;
 		}
 
@@ -70,12 +73,18 @@ public class FrameProtect implements CommandExecutor {
 
 		if (frame.isInvulnerable() != protecting) {
 			frame.setInvulnerable(protecting);
+			setProtectedBy(frame, protecting ? player : null);
+			setProtectedAt(frame, protecting ? new Date() : null);
 			changed = true;
 		}
 
 		final Particle.DustOptions options = new Particle.DustOptions(protecting ? Color.GREEN : Color.RED, 1.0f);
 		player.sendMessage(
-				ChatColor.GREEN + "Frame" + (changed ? " " : " is already ") + (protecting ? "protected" : "unprotected"));
+				ChatColor.GREEN + "Frame"
+						+ (changed ? " " : " is already ")
+						+ (protecting ? "protected" : "unprotected")
+						+ (((!changed) && frame.isInvulnerable()) ?
+						(" by " + getProtectedBy(frame) + " at " + getProtectedAt(frame)) : ""));
 		Drawing.scheduleStickyDraw(this.plugin, () -> Drawing.drawBoundingBox(frame, options), 3, 10);
 		return true;
 	}
