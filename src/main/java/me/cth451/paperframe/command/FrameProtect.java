@@ -73,7 +73,7 @@ public class FrameProtect implements CommandExecutor {
 
 		if (frame.isInvulnerable() != protecting) {
 			frame.setInvulnerable(protecting);
-			setProtectedBy(frame, protecting ? player : null);
+			setProtectedBy(frame, protecting ? player.getName() : null);
 			setProtectedAt(frame, protecting ? new Date() : null);
 			changed = true;
 		}
