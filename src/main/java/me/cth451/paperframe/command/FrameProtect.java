@@ -21,6 +21,14 @@ import java.util.List;
 import static me.cth451.paperframe.util.FrameProperties.*;
 import static me.cth451.paperframe.util.Targeting.findFrameByTargetedEntity;
 
+/**
+ * Toggle protected status on an item frame
+ * <p>
+ * A protected frame:
+ * - Cannot have its contents replaced or rotated (i.e. on player right click)
+ * - Cannot be destroyed by taking damage
+ * - Cannot be destroyed by removing the supporting block or placing a block in the occupying space
+ */
 public class FrameProtect implements CommandExecutor {
 	private final PaperFramePlugin plugin;
 

@@ -2,6 +2,7 @@ package me.cth451.paperframe.command;
 
 import me.cth451.paperframe.PaperFramePlugin;
 import me.cth451.paperframe.util.Drawing;
+import me.cth451.paperframe.util.FrameProperties;
 import org.bukkit.Color;
 import org.bukkit.Particle;
 import org.bukkit.command.Command;
@@ -11,8 +12,13 @@ import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Date;
+
 import static me.cth451.paperframe.util.Targeting.findFrameByTargetedEntity;
 
+/**
+ * Reveal / Hide an item frame. This command make use of internal
+ */
 public class FrameShowHide implements CommandExecutor {
 	/**
 	 * Ref to plugin instance itself
@@ -41,6 +47,8 @@ public class FrameShowHide implements CommandExecutor {
 			frame.setVisible(!isVisible);
 			final Particle.DustOptions options = new Particle.DustOptions(isVisible ? Color.RED : Color.GREEN, 1.0f);
 			player.sendMessage(isVisible ? "Frame hidden" : "Frame revealed");
+			FrameProperties.setHiddenBy(frame, isVisible ? player.getName() : null);
+			FrameProperties.setHiddenAt(frame, isVisible ? new Date() : null);
 			Drawing.scheduleStickyDraw(this.plugin, () -> Drawing.drawBoundingBox(frame, options), 3, 10);
 		}
 		return true;

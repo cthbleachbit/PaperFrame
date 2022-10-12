@@ -37,17 +37,25 @@ commands:
     permission: "paperframe.configreload"
     aliases:
       - fcr
+  framestat:
+    description: "Check item frame status"
+    usage: "/framestat"
+    permission: "paperframe.stat"
+    aliases:
+      - fstat
 permissions:
   paperframe.*:
     description: "Gives access to all PaperFrame commands"
+    default: false
     children:
       paperframe.protect: true
       paperframe.highlight: true
       paperframe.showhide: true
       paperframe.configreload: true
+      paperframe.stat: true
   paperframe.protect:
     description: "Allow use of /frameprotect"
-    default: false
+    default: op
   paperframe.highlight:
     description: "Allow use of /framehighlight and /fh"
     default: true
@@ -55,5 +63,8 @@ permissions:
     description: "Allow use of /frameshowhide and /fsh"
     default: op
   paperframe.configreload:
-    description: "Allow use of /frame/configreload and /fcr"
+    description: "Allow use of /frameconfigreload and /fcr"
     default: op
+  paperframe.stat:
+    description: "Allow use of /framestat and /fstat"
+    default: true
