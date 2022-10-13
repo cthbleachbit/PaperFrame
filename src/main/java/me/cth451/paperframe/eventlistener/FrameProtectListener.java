@@ -15,11 +15,18 @@ import org.bukkit.event.hanging.HangingBreakEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 
 /**
- * Perform checks pertaining frame protection.
- * A protected frame:
- * - Cannot have its contents replaced or rotated (i.e. on player right click)
- * - Cannot be destroyed by taking damage
- * - Cannot be destroyed by removing the supporting block or placing a block in the occupying space
+ * Perform checks pertaining frame protection. A protected frame:
+ * <ul>
+ *     <li>
+ *         Cannot have its contents replaced or rotated (i.e. on player right click).
+ *     </li>
+ *     <li>
+ *         Cannot be destroyed by taking damage from entity (player damage, explosions, etc).
+ *     </li>
+ *     <li>
+ *         Cannot be destroyed by removing the supporting block or placing a block in the occupying space.
+ *     </li>
+ * </ul>
  */
 public class FrameProtectListener implements Listener {
 	private final PaperFramePlugin plugin;
@@ -41,11 +48,13 @@ public class FrameProtectListener implements Listener {
 			return;
 		}
 
-		if (frame.isInvulnerable()) {
-			event.setCancelled(true);
-			event.getPlayer().sendMessage("This frame is protected!");
-			Drawing.scheduleStickyDraw(this.plugin, () -> Drawing.drawBoundingBox(frame, options), 1, 10);
+		if (!frame.isFixed()) {
+			return;
 		}
+
+		event.setCancelled(true);
+		event.getPlayer().sendMessage("This frame is protected!");
+		Drawing.scheduleStickyDraw(this.plugin, () -> Drawing.drawBoundingBox(frame, options), 1, 10);
 	}
 
 	/**
@@ -59,13 +68,15 @@ public class FrameProtectListener implements Listener {
 			return;
 		}
 
-		if (frame.isInvulnerable()) {
-			event.setCancelled(true);
-			if (event instanceof HangingBreakByEntityEvent breakByEntityEvent) {
-				if (breakByEntityEvent.getRemover() instanceof Player player) {
-					player.sendMessage("This frame is protected!");
-					Drawing.scheduleStickyDraw(this.plugin, () -> Drawing.drawBoundingBox(frame, options), 1, 10);
-				}
+		if (!frame.isFixed()) {
+			return;
+		}
+
+		event.setCancelled(true);
+		if (event instanceof HangingBreakByEntityEvent breakByEntityEvent) {
+			if (breakByEntityEvent.getRemover() instanceof Player player) {
+				player.sendMessage("This frame is protected!");
+				Drawing.scheduleStickyDraw(this.plugin, () -> Drawing.drawBoundingBox(frame, options), 1, 10);
 			}
 		}
 	}
@@ -81,7 +92,7 @@ public class FrameProtectListener implements Listener {
 			return;
 		}
 
-		if (!frame.isInvulnerable()) {
+		if (!frame.isFixed()) {
 			return;
 		}
 

@@ -22,12 +22,23 @@ import static me.cth451.paperframe.util.FrameProperties.*;
 import static me.cth451.paperframe.util.Targeting.findFrameByTargetedEntity;
 
 /**
- * Toggle protected status on an item frame
+ * Toggle protected status on an item frame. A protected frame:
+ * <ul>
+ *     <li>
+ *         Cannot have its contents replaced or rotated (i.e. on player right click).
+ *     </li>
+ *     <li>
+ *         Cannot be destroyed by taking damage from entity (player damage, explosions, etc).
+ *     </li>
+ *     <li>
+ *         Cannot be destroyed by removing the supporting block or placing a block in the occupying space.
+ *     </li>
+ * </ul>
+ * The events are caught and cancelled by {@link me.cth451.paperframe.eventlistener.FrameProtectListener}.
  * <p>
- * A protected frame:
- * - Cannot have its contents replaced or rotated (i.e. on player right click)
- * - Cannot be destroyed by taking damage
- * - Cannot be destroyed by removing the supporting block or placing a block in the occupying space
+ * Note: vanilla minecraft allows to set "Fixed"  or "Invulnerable" tag on item frames. These tags fail to prevent
+ * players in creative mode from destroying / modifying an item frames. `/protect -1` only sets "Fixed" tag as an
+ * indication that someone has set protection status for this item frame.
  */
 public class FrameProtect implements CommandExecutor {
 	private final PaperFramePlugin plugin;
@@ -70,7 +81,7 @@ public class FrameProtect implements CommandExecutor {
 			player.sendMessage(ChatColor.RED + "Must specify either --on or --off");
 			return false;
 		} else if (!((boolean) parsed.get("on") || (boolean) parsed.get("off"))) {
-			player.sendMessage("Frame is " + (frame.isInvulnerable() ? "protected by " + getProtectedBy(
+			player.sendMessage("Frame is " + (frame.isFixed() ? "protected by " + getProtectedBy(
 					frame) + " at " + getProtectedAt(frame) : "unprotected"));
 			return true;
 		}
@@ -79,8 +90,8 @@ public class FrameProtect implements CommandExecutor {
 		boolean protecting = (boolean) parsed.get("on");
 		boolean changed = false;
 
-		if (frame.isInvulnerable() != protecting) {
-			frame.setInvulnerable(protecting);
+		if (frame.isFixed() != protecting) {
+			frame.setFixed(protecting);
 			setProtectedBy(frame, protecting ? player.getName() : null);
 			setProtectedAt(frame, protecting ? new Date() : null);
 			changed = true;
@@ -91,7 +102,7 @@ public class FrameProtect implements CommandExecutor {
 				ChatColor.GREEN + "Frame"
 						+ (changed ? " " : " is already ")
 						+ (protecting ? "protected" : "unprotected")
-						+ (((!changed) && frame.isInvulnerable()) ?
+						+ (((!changed) && frame.isFixed()) ?
 						(" by " + getProtectedBy(frame) + " at " + getProtectedAt(frame)) : ""));
 		Drawing.scheduleStickyDraw(this.plugin, () -> Drawing.drawBoundingBox(frame, options), 3, 10);
 		return true;

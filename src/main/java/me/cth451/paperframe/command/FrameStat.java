@@ -38,7 +38,7 @@ public class FrameStat implements CommandExecutor {
 			player.sendMessage("Can't find an item frame where you are looking at");
 		} else {
 			boolean isHidden = !frame.isVisible();
-			boolean isProtected = frame.isInvulnerable();
+			boolean isProtected = frame.isFixed();
 			StringBuilder messageBuilder = new StringBuilder();
 			messageBuilder.append(String.format("%s at coordinates %s:\n",
 			                                    frame instanceof GlowItemFrame ? "Glowing item frame" : "Item frame",
