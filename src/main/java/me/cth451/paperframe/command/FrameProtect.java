@@ -43,16 +43,15 @@ import static me.cth451.paperframe.util.Targeting.findFrameByTargetedEntity;
 public class FrameProtect implements CommandExecutor {
 	private final PaperFramePlugin plugin;
 
-	private final ArgvParser argvParser;
-
 	private final static UnixFlagSpec[] arguments = {
 			new UnixFlagSpec("on", '1', UnixFlagSpec.FlagType.EXIST, "on"),
 			new UnixFlagSpec("off", '0', UnixFlagSpec.FlagType.EXIST, "off"),
 	};
 
+	private final static ArgvParser argvParser = new ArgvParser(List.of(arguments));
+
 	public FrameProtect(PaperFramePlugin plugin) {
 		this.plugin = plugin;
-		this.argvParser = new ArgvParser(List.of(arguments));
 	}
 
 	@Override

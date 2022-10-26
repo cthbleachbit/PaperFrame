@@ -18,22 +18,24 @@ import java.util.List;
 import static me.cth451.paperframe.util.HighlightOptions.HighlightFilter.*;
 
 /**
- * highlight the frames in range even when they are hidden, and turn off in 5 seconds
+ * highlight the frames in range
  */
 public class FrameHighlight implements CommandExecutor {
 	private final PaperFramePlugin plugin;
 
 	private final static UnixFlagSpec[] arguments = {
+			/* Show hidden frames only */
 			new UnixFlagSpec("hidden", 'h', UnixFlagSpec.FlagType.EXIST, "hidden"),
+			/* Show protected frames only */
 			new UnixFlagSpec("protected", 'p', UnixFlagSpec.FlagType.EXIST, "protected"),
+			/* Radius in blocks which to find frames in */
 			new UnixFlagSpec("radius", 'r', UnixFlagSpec.FlagType.PARAMETRIZE, "radius", Double::parseDouble),
 	};
 
-	private final ArgvParser argvParser;
+	private final static ArgvParser argvParser = new ArgvParser(Arrays.asList(arguments));
 
 	public FrameHighlight(PaperFramePlugin plugin) {
 		this.plugin = plugin;
-		argvParser = new ArgvParser(Arrays.asList(arguments));
 	}
 
 	@Override
