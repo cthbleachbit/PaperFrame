@@ -41,7 +41,7 @@ public class HighlightOptions {
 		public boolean filter(ItemFrame frame) {
 			return switch (this) {
 				case ALL -> true;
-				case HIDDEN -> frame.isVisible();
+				case HIDDEN -> !frame.isVisible();
 				case PROTECTED -> frame.isInvulnerable();
 			};
 		}
