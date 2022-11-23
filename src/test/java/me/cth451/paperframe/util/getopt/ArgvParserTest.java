@@ -115,6 +115,7 @@ class ArgvParserTest {
 		assertEquals(strList.get(0).get("float"), 0.5772156f);
 		assertEquals(strList.get(0).get("integer"), 69);
 	}
+
 	@Test
 	void concurrentNumericalTest2() {
 		ArgvParser parser = new ArgvParser(numerical);
@@ -142,4 +143,44 @@ class ArgvParserTest {
 		assertEquals(0.5772156f, strList.get(0).get("float"));
 		assertEquals(69, strList.get(0).get("integer"));
 	}
+
+	@Test
+	void parseEscapeTest1() {
+		ArgvParser parser = new ArgvParser(minemap);
+		String[] input = {"-d", "-i", "blah\\", "blah blah", "-g1.17"};
+		HashMap<String, Object> parsed = parser.parse(List.of(input));
+		// should get 2 EXIST type flag and 2 PARAMETRIZE type flag
+		assertEquals(parsed.size(), 4);
+		assertEquals(parsed.get("dithering"), true);
+		assertEquals("blah blah blah", parsed.get("input"));
+		assertEquals(parsed.get("no-gz"), false);
+		assertEquals(parsed.get("game"), "1.17");
+		assertFalse(parsed.containsKey("export"));
+		assertFalse(parsed.containsKey("output"));
+	}
+
+	@Test
+	void unescapeTest1() {
+		String[] input = {"arg1\\"};
+		List<String> normalized = Unescape.normalizeArgv1p(List.of(input));
+		assertEquals(1, normalized.size());
+		assertEquals("arg1 ", normalized.get(0));
+	}
+
+	@Test
+	void unescapeTest2() {
+		String[] input = {"arg1\\\\"};
+		List<String> normalized = Unescape.normalizeArgv1p(List.of(input));
+		assertEquals(1, normalized.size());
+		assertEquals("arg1\\", normalized.get(0));
+	}
+	@Test
+
+	void unescapeTest3() {
+		String[] input = {"arg1\\\\\\"};
+		List<String> normalized = Unescape.normalizeArgv1p(List.of(input));
+		assertEquals(1, normalized.size());
+		assertEquals("arg1\\ ", normalized.get(0));
+	}
+
 }

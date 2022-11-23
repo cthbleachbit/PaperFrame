@@ -1,11 +1,12 @@
 package me.cth451.paperframe.util.getopt;
 
+import org.apache.logging.log4j.util.BiConsumer;
 import org.jetbrains.annotations.Contract;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * A GNU getopt style argument parser (reduced functionality - no positional arguments)
@@ -16,11 +17,8 @@ public class ArgvParser {
 	private final HashMap<Character, UnixFlagSpec> shortLookupTable = new HashMap<>();
 
 	/**
-	 * Verify whether the arguments make sense:
-	 * - check for conflicting long options
-	 * - check for conflicting short hands
-	 * - check for conflicting destination variable name
-	 * This method only need to execute once during construction.
+	 * Verify whether the arguments make sense: - check for conflicting long options - check for conflicting short hands
+	 * - check for conflicting destination variable name This method only need to execute once during construction.
 	 *
 	 * @throws IllegalArgumentException if the argv specification violates the rules above
 	 */
@@ -67,19 +65,19 @@ public class ArgvParser {
 	}
 
 	/**
-	 * Parse given list of argv1 and on into key-value pairs.
-	 * If the type of {@link UnixFlagSpec} is EXIST, the resulting destination variable will contain True/False.
-	 * If the type of {@link UnixFlagSpec} is PARAMETRIZE, the destination variable may
-	 * - either do not exist in the mapping,
-	 * - or maps to the parameter supplied to that flag as a String.
-	 * This method does not modify internal states and should be safe to call concurrently.
+	 * Parse given list of argv1 and on into key-value pairs. If the type of {@link UnixFlagSpec} is EXIST, the
+	 * resulting destination variable will contain True/False. If the type of {@link UnixFlagSpec} is PARAMETRIZE, the
+	 * destination variable may - either do not exist in the mapping, - or maps to the parameter supplied to that flag
+	 * as a String. This method does not modify internal states and should be safe to call concurrently.
 	 *
-	 * @param argv1p ordered list of arguments from argv[1] and on
+	 * @param argv1pWithBackslash ordered list of arguments from argv[1] and on
 	 * @return mapping of parsed arguments and parameters
 	 * @throws IllegalArgumentException if the input string array contains unrecognized options
 	 */
 	@Contract(pure = true)
-	public HashMap<String, Object> parse(List<String> argv1p) throws IllegalArgumentException {
+	public HashMap<String, Object> parse(List<String> argv1pWithBackslash) throws IllegalArgumentException {
+		List<String> argv1p = Unescape.normalizeArgv1p(argv1pWithBackslash);
+
 		// Create defaulted existence flags
 		HashMap<String, Object> ret = new HashMap<>();
 		arguments.stream()
