@@ -38,7 +38,7 @@ public class HighlightOptions {
 		 * @param frame item frame to check
 		 * @return whether this frame satisfies the criteria of the filter
 		 */
-		public boolean filter(ItemFrame frame) {
+		public boolean apply(ItemFrame frame) {
 			return switch (this) {
 				case ALL -> true;
 				case HIDDEN -> !frame.isVisible();
@@ -51,6 +51,7 @@ public class HighlightOptions {
 	 * Filter type
 	 */
 	public HighlightFilter filter;
+
 	/**
 	 * the range in which to find frames to highlight
 	 */

@@ -45,7 +45,7 @@ public class FrameHighlightTask implements Runnable {
 
 				List<Entity> nearby = player.getNearbyEntities(range, range, range);
 				frames.addAll(nearby.stream()
-				                    .filter((e) -> e instanceof ItemFrame frame && filter.filter(frame))
+				                    .filter((e) -> e instanceof ItemFrame frame && filter.apply(frame))
 				                    .map((e) -> (ItemFrame) e)
 				                    .toList());
 			}

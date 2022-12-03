@@ -37,6 +37,7 @@ public class FrameStat implements CommandExecutor {
 			// No item frames in range
 			player.sendMessage("Can't find an item frame where you are looking at");
 		} else {
+			// Check properties
 			boolean isHidden = !frame.isVisible();
 			boolean isProtected = frame.isFixed();
 			StringBuilder messageBuilder = new StringBuilder();
@@ -66,6 +67,7 @@ public class FrameStat implements CommandExecutor {
 				messageBuilder.append(ChatColor.GREEN)
 				              .append("☒ Not protected\n");
 			}
+
 			player.sendMessage(messageBuilder.toString());
 		}
 		return true;
