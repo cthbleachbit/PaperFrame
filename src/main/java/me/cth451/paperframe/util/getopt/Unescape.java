@@ -34,18 +34,18 @@ public class Unescape {
 	static final Function<String, Map.Entry<String, Action>> evaluateArg = s -> {
 		/* Find out how many backslash there is at the end of the token */
 		int idx = s.length();
-		while (s.charAt(idx - 1) == '\\' && idx > 0) {
+		while (idx > 0 && s.charAt(idx - 1) == '\\') {
 			idx--;
 		}
 		int numOfSlash = s.length() - idx;
 		if (numOfSlash <= 0) {
 			return Map.entry(s, Action.COMMIT);
 		} else if (numOfSlash % 2 == 0) {
-			/* Need to replace '//'s into '/' */
+			/* Need to replace '\\'s into '\' */
 			String r = s.replace("\\\\", "\\");
 			return Map.entry(r, Action.COMMIT);
 		} else {
-			/* Replace last '/' with space and '//'s into '/'s */
+			/* Replace last '\' with space and '\\'s into '\'s */
 			String r = s.replaceAll("\\\\$", " ").replace("\\\\", "\\");
 			return Map.entry(r, Action.CONTINUE);
 		}

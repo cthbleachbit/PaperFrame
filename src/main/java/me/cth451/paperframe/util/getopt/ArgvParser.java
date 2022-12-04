@@ -2,6 +2,8 @@ package me.cth451.paperframe.util.getopt;
 
 import org.apache.logging.log4j.util.BiConsumer;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -75,7 +77,26 @@ public class ArgvParser {
 	 * @throws IllegalArgumentException if the input string array contains unrecognized options
 	 */
 	@Contract(pure = true)
-	public HashMap<String, Object> parse(List<String> argv1pWithBackslash) throws IllegalArgumentException {
+	public HashMap<String, Object> parse(@NotNull List<String> argv1pWithBackslash) throws IllegalArgumentException {
+		return parse(argv1pWithBackslash, null);
+	}
+
+	/**
+	 * Parse given list of argv1 and on into key-value pairs. If the type of {@link UnixFlagSpec} is EXIST, the
+	 * resulting destination variable will contain True/False. If the type of {@link UnixFlagSpec} is PARAMETRIZE, the
+	 * destination variable may - either do not exist in the mapping, - or maps to the parameter supplied to that flag
+	 * as a String. This method does not modify internal states and should be safe to call concurrently.
+	 *
+	 * @param argv1pWithBackslash ordered list of arguments from argv[1] and on
+	 * @param extraTokens         if set to nonnull, parsing will stop upon encountering an unknown token. The remaining
+	 *                            tokens are written here. If this is set to null, then unrecognized parameters will
+	 *                            cause IllegalArgumentException.
+	 * @return mapping of parsed arguments and parameters
+	 * @throws IllegalArgumentException if the input string array contains unrecognized options and extraTokens is null.
+	 */
+	@Contract(pure = true)
+	public HashMap<String, Object> parse(@NotNull List<String> argv1pWithBackslash, @Nullable List<String> extraTokens)
+			throws IllegalArgumentException {
 		List<String> argv1p = Unescape.normalizeArgv1p(argv1pWithBackslash);
 
 		// Create defaulted existence flags
@@ -86,13 +107,29 @@ public class ArgvParser {
 
 		Iterator<String> itr = argv1p.iterator();
 
+		BiConsumer<Iterator<String>, List<String>> appendRest = new BiConsumer<>() {
+			@Override
+			public void accept(Iterator<String> itr, List<String> strings) {
+				while (itr.hasNext()) {
+					strings.add(itr.next());
+				}
+			}
+		};
+
 		while (itr.hasNext()) {
 			String arg = itr.next();
 			if (arg.startsWith("--")) {
 				// Long argument - Strip away leading "--"
 				arg = arg.substring(2);
 				if (!longLookupTable.containsKey(arg)) {
-					throw new IllegalArgumentException("Unrecognized long option --" + arg);
+					if (extraTokens == null) {
+						throw new IllegalArgumentException("Unrecognized long option --" + arg);
+					} else {
+						/* Bail out of the loop */
+						extraTokens.add(arg);
+						appendRest.accept(itr, extraTokens);
+						break;
+					}
 				}
 
 				UnixFlagSpec flagSpec = longLookupTable.get(arg);
@@ -123,7 +160,14 @@ public class ArgvParser {
 					arg = arg.substring(1);
 
 					if (!shortLookupTable.containsKey(s)) {
-						throw new IllegalArgumentException("Unrecognized short option -" + s);
+						if (extraTokens == null) {
+							throw new IllegalArgumentException("Unrecognized short option -" + s);
+						} else {
+							/* Bail out of the loop */
+							extraTokens.add(arg);
+							appendRest.accept(itr, extraTokens);
+							break;
+						}
 					}
 
 					UnixFlagSpec flagSpec = shortLookupTable.get(s);
@@ -153,6 +197,15 @@ public class ArgvParser {
 							ret.put(flagSpec.destination(), transformArg);
 						}
 					}
+				}
+			} else {
+				if (extraTokens == null) {
+					throw new IllegalArgumentException("Unexpected parameter" + arg);
+				} else {
+					/* Bail out of the loop */
+					extraTokens.add(arg);
+					appendRest.accept(itr, extraTokens);
+					break;
 				}
 			}
 		}
