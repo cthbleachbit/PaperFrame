@@ -1,5 +1,5 @@
 name: 'PaperFrame'
-version: 0.0.6
+version: 0.0.7
 author: 'cth451'
 description: 'Commands to manipulate item frames'
 main: me.cth451.paperframe.PaperFramePlugin
