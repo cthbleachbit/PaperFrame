@@ -2,12 +2,14 @@ package me.cth451.paperframe.util;
 
 import org.bukkit.entity.ItemFrame;
 
+import java.util.function.Predicate;
+
 public class HighlightOptions {
 
 	/**
 	 * Highlight filtering methods available
 	 */
-	public enum HighlightFilter {
+	public enum HighlightFilter implements Predicate<ItemFrame> {
 		/**
 		 * Let all item frames through
 		 */
@@ -38,7 +40,8 @@ public class HighlightOptions {
 		 * @param frame item frame to check
 		 * @return whether this frame satisfies the criteria of the filter
 		 */
-		public boolean apply(ItemFrame frame) {
+		@Override
+		public boolean test(ItemFrame frame) {
 			return switch (this) {
 				case ALL -> true;
 				case HIDDEN -> !frame.isVisible();

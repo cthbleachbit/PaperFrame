@@ -1,7 +1,8 @@
 package me.cth451.paperframe.task;
 
 import me.cth451.paperframe.PaperFramePlugin;
-import me.cth451.paperframe.util.*;
+import me.cth451.paperframe.util.Drawing;
+import me.cth451.paperframe.util.HighlightOptions;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Particle;
@@ -45,8 +46,9 @@ public class FrameHighlightTask implements Runnable {
 
 				List<Entity> nearby = player.getNearbyEntities(range, range, range);
 				frames.addAll(nearby.stream()
-				                    .filter((e) -> e instanceof ItemFrame frame && filter.apply(frame))
-				                    .map((e) -> (ItemFrame) e)
+				                    .filter(ItemFrame.class::isInstance)
+				                    .map(ItemFrame.class::cast)
+				                    .filter(filter)
 				                    .toList());
 			}
 
