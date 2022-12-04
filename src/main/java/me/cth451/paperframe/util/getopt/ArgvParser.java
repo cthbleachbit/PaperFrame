@@ -1,14 +1,14 @@
 package me.cth451.paperframe.util.getopt;
 
-import org.apache.logging.log4j.util.BiConsumer;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.function.BiConsumer;
 
 /**
  * A GNU getopt style argument parser (reduced functionality - no positional arguments)
@@ -92,9 +92,9 @@ public class ArgvParser {
 	 *                            tokens are written here. If this is set to null, then unrecognized parameters will
 	 *                            cause IllegalArgumentException.
 	 * @return mapping of parsed arguments and parameters
-	 * @throws IllegalArgumentException if the input string array contains unrecognized options and extraTokens is null.
+	 * @throws IllegalArgumentException if the input string array contains unrecognized options and extraTokens is
+	 *                                  null.
 	 */
-	@Contract(pure = true)
 	public HashMap<String, Object> parse(@NotNull List<String> argv1pWithBackslash, @Nullable List<String> extraTokens)
 			throws IllegalArgumentException {
 		List<String> argv1p = Unescape.normalizeArgv1p(argv1pWithBackslash);
@@ -107,12 +107,9 @@ public class ArgvParser {
 
 		Iterator<String> itr = argv1p.iterator();
 
-		BiConsumer<Iterator<String>, List<String>> appendRest = new BiConsumer<>() {
-			@Override
-			public void accept(Iterator<String> itr, List<String> strings) {
-				while (itr.hasNext()) {
-					strings.add(itr.next());
-				}
+		BiConsumer<Iterator<String>, List<String>> appendRest = (itr1, strings) -> {
+			while (itr1.hasNext()) {
+				strings.add(itr1.next());
 			}
 		};
 

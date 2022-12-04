@@ -28,3 +28,18 @@ Requires `paperframe.showhide` permission - granted by default to everyone.
 Reloads plugin configuration from disk
 
 Requires `paperframe.configreload` permission - granted by default to OP.
+
+### `/frameprotect [-0] [-1]`, `/fprot`, `/fprotect`
+
+Takes `-0` for turning off protection or `-1` to turn on protection. A protected frame cannot be destroyed normally by damage, removing the supporting block, or having a block occupying the same location.
+
+### `/framestat`, `/fstat`
+
+Reveals protection and visibility status.
+
+### `/framemaps [-g] [-a] id1 id2 id3....`, `/fmaps`
+
+Spawn multiple item frames to contain maps of specified ids. Note that this will delete any item frames that already occupy that block surface if `-a` is not specified. Generated frames will be hidden and protected by default.
+
+* Use `-g` to spawn maps with glowing item frames.
+* Use `-a` to skip removal of existing frames and place new frames on top of existing ones.
