@@ -2,9 +2,11 @@ package me.cth451.paperframe.command;
 
 import com.destroystokyo.paper.block.TargetBlockInfo;
 import me.cth451.paperframe.PaperFramePlugin;
-import me.cth451.paperframe.util.FrameProperties;
 import me.cth451.paperframe.util.Targeting;
+import me.cth451.paperframe.util.getopt.ArgvParser;
+import me.cth451.paperframe.util.getopt.UnixFlagSpec;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -22,15 +24,19 @@ import org.bukkit.util.BoundingBox;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
- * fmaps|gfmaps [-g] id1 id2 id3....
+ * fmaps [-g] [-a] id1 id2 id3....
  * <p>
  * Spawn multiple item frames to contain maps of specified ids. Note that this will delete any item frames that already
- * occupy that block surface. The newly generated frames will be hidden and protected by default.
- * <p>
- * Use gfmaps to spawn glowing item frames instead of normal ones.
+ * occupy that block surface if [-a] is not specified. Generated frames will be hidden and protected by default.
+ * <ul>
+ *     <li>-g = glow item frame</li>
+ *     <li>-a = append</li>
+ * </ul>
  */
 public class FrameMapStack implements CommandExecutor {
 	/**
@@ -38,12 +44,31 @@ public class FrameMapStack implements CommandExecutor {
 	 */
 	private final PaperFramePlugin plugin;
 
+	/**
+	 * Constructor
+	 *
+	 * @param plugin ptr to plugin instance, mainly used for logger
+	 */
 	public FrameMapStack(PaperFramePlugin plugin) {
 		this.plugin = plugin;
 	}
 
-	private void nukeAllFramesLookedAt(@NotNull BoundingBox boundingBox, @NotNull Player player) {
-		List<Entity> nearby = player.getNearbyEntities(Targeting.SELECTION_RANGE, Targeting.SELECTION_RANGE,
+	private final static UnixFlagSpec[] arguments = {
+			new UnixFlagSpec("glow", 'g', UnixFlagSpec.FlagType.EXIST, "glow"),
+			new UnixFlagSpec("append", 'a', UnixFlagSpec.FlagType.EXIST, "append"),
+	};
+
+	private final static ArgvParser argvParser = new ArgvParser(List.of(arguments));
+
+	/**
+	 * Remove all item frames in the specified bounding box
+	 *
+	 * @param boundingBox bounding box in which to find item frames
+	 * @param player      only used to check nearby entities
+	 */
+	private void removeFramesInBox(@NotNull BoundingBox boundingBox, @NotNull Player player) {
+		List<Entity> nearby = player.getNearbyEntities(Targeting.SELECTION_RANGE,
+		                                               Targeting.SELECTION_RANGE,
 		                                               Targeting.SELECTION_RANGE);
 		final BoundingBox fBox = boundingBox;
 		List<ItemFrame> filtered =
@@ -55,6 +80,7 @@ public class FrameMapStack implements CommandExecutor {
 
 		plugin.getLogger().info(filtered.toString());
 		filtered.forEach(Entity::remove);
+		player.sendMessage(String.format("Removed %d item frames", filtered.size()));
 	}
 
 	@Override
@@ -68,10 +94,16 @@ public class FrameMapStack implements CommandExecutor {
 			return false;
 		}
 
-		final boolean useGlow = argv0.equals("gfmaps");
+		HashMap<String, Object> parsed;
+		List<String> extraArgs = new LinkedList<>();
+		parsed = argvParser.parse(List.of(argv1p), extraArgs);
+
+		final boolean useGlow = (Boolean) parsed.get("glow");
+		final boolean append = (Boolean) parsed.get("append");
+
 		List<Short> ids;
 		try {
-			ids = Arrays.stream(argv1p).map(Short::parseShort).toList();
+			ids = extraArgs.stream().map(Short::parseShort).toList();
 		} catch (NumberFormatException e) {
 			return false;
 		}
@@ -93,11 +125,12 @@ public class FrameMapStack implements CommandExecutor {
 				new BoundingBox(containingBlock.getX(), containingBlock.getY(), containingBlock.getZ(),
 				                containingBlock.getX() + 1, containingBlock.getY() + 1, containingBlock.getZ() + 1);
 
-		nukeAllFramesLookedAt(containingBox, player);
+		if (!append) {
+			removeFramesInBox(containingBox, player);
+		}
 
 		final Player finalPlayer = player;
 		final BlockFace extruding = targetInfo.getBlockFace();
-		final Block affixedBlock = targetInfo.getBlock();
 		final EntityType frameType = useGlow ? EntityType.GLOW_ITEM_FRAME : EntityType.ITEM_FRAME;
 
 		/* Create new item frames */

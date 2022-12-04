@@ -15,6 +15,7 @@ commands:
     permission: "paperframe.protect"
     aliases:
       - fprotect
+      - fprot
   framehighlight:
     description: |
       Toggle highlight status of item frames near you
@@ -43,14 +44,15 @@ commands:
     permission: "paperframe.stat"
     aliases:
       - fstat
-  fmaps:
-    description: "Spawn maps in stacked item frames where you are looking at"
-    usage: "/fmap id1 id2 ...."
+  framemaps:
+    description: |
+      Spawn protected hidden item frames containing specific maps at your cursor.
+      -g = spawn with glowing item frames
+      -a = append only, otherwise existing frames in the occupying space will be removed
+    usage: "/framemaps [-g] [-a] id1 id2 ...."
     permission: "paperframe.mapstack"
-  gfmaps:
-    description: "Spawn maps in stacked glowing item frames where you are looking at"
-    usage: "/gfmap id1 id2 ...."
-    permission: "paperframe.mapstack"
+    aliases:
+      - fmaps
 permissions:
   paperframe.*:
     description: "Gives access to all PaperFrame commands"
@@ -78,5 +80,5 @@ permissions:
     description: "Allow use of /framestat and /fstat"
     default: true
   paperframe.mapstack:
-    description: "Allow use of /fmaps and /gfmaps"
+    description: "Allow use of /framemaps and /fmaps"
     default: op
