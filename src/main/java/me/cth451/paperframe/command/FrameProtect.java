@@ -54,6 +54,12 @@ public class FrameProtect implements CommandExecutor {
 		this.plugin = plugin;
 	}
 
+	public static void setProtected(@NotNull ItemFrame frame, boolean active, @NotNull Player player) {
+		frame.setFixed(active);
+		setProtectedBy(frame, active ? player.getName() : null);
+		setProtectedAt(frame, active ? new Date() : null);
+	}
+
 	@Override
 	public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String argv0, @NotNull String[] argv1) {
 		if (!(commandSender instanceof Player player)) {
@@ -90,9 +96,7 @@ public class FrameProtect implements CommandExecutor {
 		boolean changed = false;
 
 		if (frame.isFixed() != protecting) {
-			frame.setFixed(protecting);
-			setProtectedBy(frame, protecting ? player.getName() : null);
-			setProtectedAt(frame, protecting ? new Date() : null);
+			setProtected(frame, protecting, player);
 			changed = true;
 		}
 

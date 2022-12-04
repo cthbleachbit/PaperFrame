@@ -43,6 +43,14 @@ commands:
     permission: "paperframe.stat"
     aliases:
       - fstat
+  fmaps:
+    description: "Spawn maps in stacked item frames where you are looking at"
+    usage: "/fmap id1 id2 ...."
+    permission: "paperframe.mapstack"
+  gfmaps:
+    description: "Spawn maps in stacked glowing item frames where you are looking at"
+    usage: "/gfmap id1 id2 ...."
+    permission: "paperframe.mapstack"
 permissions:
   paperframe.*:
     description: "Gives access to all PaperFrame commands"
@@ -53,6 +61,7 @@ permissions:
       paperframe.showhide: true
       paperframe.configreload: true
       paperframe.stat: true
+      paperframe.mapstack: true
   paperframe.protect:
     description: "Allow use of /frameprotect"
     default: op
@@ -68,3 +77,6 @@ permissions:
   paperframe.stat:
     description: "Allow use of /framestat and /fstat"
     default: true
+  paperframe.mapstack:
+    description: "Allow use of /fmaps and /gfmaps"
+    default: op

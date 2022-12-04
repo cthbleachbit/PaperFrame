@@ -29,6 +29,12 @@ public class FrameShowHide implements CommandExecutor {
 		this.plugin = plugin;
 	}
 
+	public static void setShowHide(@NotNull ItemFrame frame, boolean visible, @NotNull Player player) {
+		frame.setVisible(visible);
+		FrameProperties.setHiddenBy(frame, !visible ? player.getName() : null);
+		FrameProperties.setHiddenAt(frame, !visible ? new Date() : null);
+	}
+
 	@Override
 	public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
 		if (!(commandSender instanceof Player player)) {
@@ -44,11 +50,9 @@ public class FrameShowHide implements CommandExecutor {
 			player.sendMessage("Can't find an item frame where you are looking at");
 		} else {
 			boolean isVisible = frame.isVisible();
-			frame.setVisible(!isVisible);
+			setShowHide(frame, !isVisible, player);
 			final Particle.DustOptions options = new Particle.DustOptions(isVisible ? Color.RED : Color.GREEN, 1.0f);
 			player.sendMessage(isVisible ? "Frame hidden" : "Frame revealed");
-			FrameProperties.setHiddenBy(frame, isVisible ? player.getName() : null);
-			FrameProperties.setHiddenAt(frame, isVisible ? new Date() : null);
 			Drawing.scheduleStickyDraw(this.plugin, () -> Drawing.drawBoundingBox(frame, options), 3, 10);
 		}
 		return true;
