@@ -59,26 +59,17 @@ public class FrameMapStack implements CommandExecutor {
 	private final static ArgvParser argvParser = new ArgvParser(List.of(arguments));
 
 	/**
-	 * Remove all item frames in the specified bounding box
+	 * Remove all item frames hanging on the specific block and on the specific face.
 	 *
-	 * @param boundingBox bounding box in which to find item frames
-	 * @param player      only used to check nearby entities
+	 * @param block the block to find item frames around
+	 * @param face  the face on the targeted block to find attached item frames
+	 * @return number of item frames removed
 	 */
-	private void removeFramesInBox(@NotNull BoundingBox boundingBox, @NotNull Player player) {
-		List<Entity> nearby = player.getNearbyEntities(Targeting.SELECTION_RANGE,
-		                                               Targeting.SELECTION_RANGE,
-		                                               Targeting.SELECTION_RANGE);
-		final BoundingBox fBox = boundingBox;
-		List<ItemFrame> filtered =
-				nearby.stream()
-				      .filter(ItemFrame.class::isInstance)
-				      .filter(e -> fBox.contains(e.getLocation().toVector()))
-				      .map(ItemFrame.class::cast)
-				      .toList();
+	private long removeFramesTargeted(@NotNull Block block, @NotNull BlockFace face) {
+		List<ItemFrame> filtered = Targeting.findFrameByAttachedBlockFace(block, face);
 
-		plugin.getLogger().info(filtered.toString());
 		filtered.forEach(Entity::remove);
-		player.sendMessage(String.format("Removed %d item frames", filtered.size()));
+		return filtered.size();
 	}
 
 	@Override
@@ -124,7 +115,9 @@ public class FrameMapStack implements CommandExecutor {
 				                containingBlock.getX() + 1, containingBlock.getY() + 1, containingBlock.getZ() + 1);
 
 		if (!append) {
-			removeFramesInBox(containingBox, player);
+			long removed = removeFramesTargeted(targetBlock, face);
+			if (removed > 0)
+				player.sendMessage(String.format("Removed %d item frames", removed));
 		}
 
 		final Player finalPlayer = player;
