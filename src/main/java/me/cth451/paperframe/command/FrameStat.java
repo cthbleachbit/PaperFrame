@@ -3,15 +3,19 @@ package me.cth451.paperframe.command;
 import me.cth451.paperframe.PaperFramePlugin;
 import me.cth451.paperframe.util.FrameProperties;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.GlowItemFrame;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import static me.cth451.paperframe.util.Targeting.findFrameByTargetedEntity;
+import java.util.List;
+
+import static me.cth451.paperframe.util.Targeting.findFrameByAttachedBlockFace;
 
 public class FrameStat implements CommandExecutor {
 	/**
@@ -31,21 +35,42 @@ public class FrameStat implements CommandExecutor {
 		}
 
 		// Check whether the player is looking at an item frame
-		ItemFrame frame = findFrameByTargetedEntity(player);
+		List<ItemFrame> frames = findFrameByAttachedBlockFace(player);
 
-		if (frame == null) {
+		if (frames.isEmpty()) {
 			// No item frames in range
 			player.sendMessage("Can't find an item frame where you are looking at");
-		} else {
+			return true;
+		}
+
+		StringBuilder messageBuilder = new StringBuilder();
+		messageBuilder.append(ChatColor.GREEN)
+		              .append(String.format("Found %d item frames at %s\n", frames.size(),
+		                                    frames.get(0).getLocation().toVector()));
+
+
+		for (int i = 0; i < frames.size(); i++) {
+			ItemFrame frame = frames.get(i);
+			ItemStack content = frame.getItem();
+
 			// Check properties
 			boolean isHidden = !frame.isVisible();
 			boolean isProtected = frame.isFixed();
-			StringBuilder messageBuilder = new StringBuilder();
-			messageBuilder.append(String.format("%s at coordinates %s:\n",
+			boolean isEmpty = (content.getType() == Material.AIR || content.getAmount() == 0);
+			boolean hasMeta = (isEmpty || content.hasItemMeta()) && content.getItemMeta() != null;
+
+			String itemDesc = isEmpty ?
+					"nothing" : String.format("%s x %d", content.getType(), content.getAmount());
+
+			messageBuilder.append(ChatColor.RESET)
+			              .append(String.format("[%d] %s with %s:\n",
+			                                    i,
 			                                    frame instanceof GlowItemFrame ? "Glowing item frame" : "Item frame",
-			                                    frame.getLocation().toVector()));
+			                                    itemDesc));
+
 			messageBuilder.append(ChatColor.RESET)
 			              .append(" Hidden: ");
+
 			if (isHidden) {
 				messageBuilder.append(ChatColor.RED)
 				              .append(String.format("☑ (%s on %s)\n",
@@ -68,8 +93,15 @@ public class FrameStat implements CommandExecutor {
 				              .append("☒ Not protected\n");
 			}
 
-			player.sendMessage(messageBuilder.toString());
+			if (hasMeta) {
+				messageBuilder.append(ChatColor.RESET)
+				              .append(" Item Metadata: ")
+				              .append(content.getItemMeta())
+				              .append("\n");
+			}
 		}
+
+		player.sendMessage(messageBuilder.toString());
 		return true;
 	}
 }
