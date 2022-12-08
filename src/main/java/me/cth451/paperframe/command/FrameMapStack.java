@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+import static me.cth451.paperframe.command.FrameUnmap.removeFramesTargeted;
+
 /**
  * fmaps [-g] [-a] id1 id2 id3....
  * <p>
@@ -58,19 +60,6 @@ public class FrameMapStack implements CommandExecutor {
 
 	private final static ArgvParser argvParser = new ArgvParser(List.of(arguments));
 
-	/**
-	 * Remove all item frames hanging on the specific block and on the specific face.
-	 *
-	 * @param block the block to find item frames around
-	 * @param face  the face on the targeted block to find attached item frames
-	 * @return number of item frames removed
-	 */
-	private long removeFramesTargeted(@NotNull Block block, @NotNull BlockFace face) {
-		List<ItemFrame> filtered = Targeting.findFrameByAttachedBlockFace(block, face);
-
-		filtered.forEach(Entity::remove);
-		return filtered.size();
-	}
 
 	@Override
 	public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String argv0, @NotNull String[] argv1p) {
@@ -115,7 +104,7 @@ public class FrameMapStack implements CommandExecutor {
 				                containingBlock.getX() + 1, containingBlock.getY() + 1, containingBlock.getZ() + 1);
 
 		if (!append) {
-			long removed = removeFramesTargeted(targetBlock, face);
+			long removed = removeFramesTargeted(player);
 			if (removed > 0)
 				player.sendMessage(String.format("Removed %d item frames", removed));
 		}

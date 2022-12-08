@@ -53,6 +53,13 @@ commands:
     permission: "paperframe.mapstack"
     aliases:
       - fmaps
+  frameunmap:
+    description: |
+      Destroy all item frames on the block face under your cursor.
+    usage: "/frameunmap"
+    permission: "paperframe.mapstack"
+    aliases:
+      - funmap
 permissions:
   paperframe.*:
     description: "Gives access to all PaperFrame commands"
@@ -80,5 +87,5 @@ permissions:
     description: "Allow use of /framestat and /fstat"
     default: true
   paperframe.mapstack:
-    description: "Allow use of /framemaps and /fmaps"
+    description: "Allow use of /framemaps, /fmaps, /frameunmap and /funmap"
     default: op
