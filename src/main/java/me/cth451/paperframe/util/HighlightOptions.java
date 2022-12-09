@@ -105,7 +105,7 @@ public class HighlightOptions implements Predicate<ItemFrame> {
 	 */
 	@Override
 	public boolean test(ItemFrame frame) {
-		return this.filters.stream().map(f -> f.test(frame)).reduce((a, b) -> a || b).orElse(true);
+		return this.filters.stream().map(f -> f.test(frame)).reduce((a, b) -> a && b).orElse(true);
 	}
 
 	@Override
