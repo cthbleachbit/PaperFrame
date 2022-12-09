@@ -87,11 +87,8 @@ public class FrameMapStack implements CommandExecutor {
 
 		TargetBlockInfo targetInfo = player.getTargetBlockInfo(Targeting.SELECTION_RANGE,
 		                                                       TargetBlockInfo.FluidMode.NEVER);
-		if (targetInfo == null) {
-			return false;
-		}
-
-		if (targetInfo.getBlock().getType().isAir()) {
+		if (targetInfo == null || targetInfo.getBlock().getType().isAir()) {
+			player.sendMessage("You need to be looking at a block surface to use /" + argv0 + ".");
 			return false;
 		}
 
