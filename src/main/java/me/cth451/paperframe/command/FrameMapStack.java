@@ -126,7 +126,7 @@ public class FrameMapStack implements CommandExecutor {
 					   f.setItem(content);
 					   f.setFacingDirection(extruding, true);
 					   FrameProtect.setProtectedByPlayer(f, true, player);
-					   FrameShowHide.setShowHideByPlayer(f, false, player);
+					   FrameShowHide.setShowHideByPlayer(f, true, player);
 					   return true;
 				   })
 				   .count();
