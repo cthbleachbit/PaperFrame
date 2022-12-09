@@ -19,7 +19,6 @@ import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.MapMeta;
-import org.bukkit.util.BoundingBox;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -29,7 +28,7 @@ import java.util.List;
 import static me.cth451.paperframe.command.FrameUnmap.removeFramesTargeted;
 
 /**
- * fmaps [-g] [-a] id1 id2 id3....
+ * framemaps [-g] [-a] id1 id2 id3....
  * <p>
  * Spawn multiple item frames to contain maps of specified ids. Note that this will delete any item frames that already
  * occupy that block surface if [-a] is not specified. Generated frames will be hidden and protected by default.
@@ -99,9 +98,6 @@ public class FrameMapStack implements CommandExecutor {
 		final Block targetBlock = targetInfo.getBlock();
 		final BlockFace face = targetInfo.getBlockFace();
 		final Location containingBlock = targetBlock.getRelative(face, 1).getLocation();
-		final BoundingBox containingBox =
-				new BoundingBox(containingBlock.getX(), containingBlock.getY(), containingBlock.getZ(),
-				                containingBlock.getX() + 1, containingBlock.getY() + 1, containingBlock.getZ() + 1);
 
 		if (!append) {
 			long removed = removeFramesTargeted(player);
@@ -117,7 +113,9 @@ public class FrameMapStack implements CommandExecutor {
 		long created =
 				ids.stream()
 				   .distinct()
+				   /* Make sure the map id exist on the server */
 				   .filter(id -> Bukkit.getMap(id) != null)
+				   /* Spawn the item frame and place map with specific id in the frame */
 				   .filter(id -> {
 					   Entity e = finalPlayer.getWorld().spawnEntity(containingBlock, frameType);
 					   ItemFrame f = (ItemFrame) e;

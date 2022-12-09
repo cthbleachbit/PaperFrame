@@ -54,6 +54,13 @@ public class FrameProtect implements CommandExecutor {
 		this.plugin = plugin;
 	}
 
+	/**
+	 * Helper function to set protected status and acting player for the change
+	 *
+	 * @param frame  frame to change
+	 * @param active whether protection should be on
+	 * @param player acting player
+	 */
 	public static void setProtectedByPlayer(@NotNull ItemFrame frame, boolean active, @NotNull Player player) {
 		setProtected(frame, active);
 		setProtectedBy(frame, active ? player.getName() : null);

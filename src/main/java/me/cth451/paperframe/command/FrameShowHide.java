@@ -18,7 +18,7 @@ import static me.cth451.paperframe.util.FrameProperties.getHidden;
 import static me.cth451.paperframe.util.Targeting.findFrameByTargetedEntity;
 
 /**
- * Reveal / Hide an item frame. This command make use of internal
+ * Reveal / Hide an item frame. This command make use of internal Fixed tag.
  */
 public class FrameShowHide implements CommandExecutor {
 	/**
@@ -30,6 +30,13 @@ public class FrameShowHide implements CommandExecutor {
 		this.plugin = plugin;
 	}
 
+	/**
+	 * Helper function to set hidden status and acting player for the change
+	 *
+	 * @param frame   frame to change
+	 * @param visible whether the frame should be visible
+	 * @param player  acting player
+	 */
 	public static void setShowHideByPlayer(@NotNull ItemFrame frame, boolean visible, @NotNull Player player) {
 		FrameProperties.setHidden(frame, !visible);
 		FrameProperties.setHiddenBy(frame, !visible ? player.getName() : null);

@@ -8,6 +8,15 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Date;
 
+/**
+ * Helper class for setting static properties (i.e. properties that players can set / get at will). All access to the
+ * following properties should go through this class:
+ * <ul>
+ *     <li>protected status + acting player + timestamp</li>
+ *     <li>hidden status + acting player + timestamp</li>
+ * </ul>
+ * Properties listed here are also checked from {@link FrameFilter} when specified from /framehighlight command.
+ */
 public class FrameProperties {
 	/**
 	 * An NBT data type adaptor that stores java.util.Date as a 64b signed integer
