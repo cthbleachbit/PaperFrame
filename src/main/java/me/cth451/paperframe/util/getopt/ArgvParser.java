@@ -67,10 +67,16 @@ public class ArgvParser {
 	}
 
 	/**
-	 * Parse given list of argv1 and on into key-value pairs. If the type of {@link UnixFlagSpec} is EXIST, the
-	 * resulting destination variable will contain True/False. If the type of {@link UnixFlagSpec} is PARAMETRIZE, the
-	 * destination variable may - either do not exist in the mapping, - or maps to the parameter supplied to that flag
-	 * as a String. This method does not modify internal states and should be safe to call concurrently.
+	 * Parse given list of argv1 and on into key-value pairs.
+	 * <p>
+	 * If the type of {@link UnixFlagSpec} is EXIST, the resulting destination variable will contain True/False.
+	 * <p>
+	 * If the type of {@link UnixFlagSpec} is PARAMETRIZE, the destination variable may
+	 * <ul>
+	 *     <li>either do not exist in the mapping,</li>
+	 *     <li>be found in the mapping by the destination name after applying {@link UnixFlagSpec#transform()}.</li>
+	 * </ul>
+	 * This method does not modify internal states and should be safe to call concurrently.
 	 *
 	 * @param argv1pWithBackslash ordered list of arguments from argv[1] and on
 	 * @return mapping of parsed arguments and parameters
@@ -82,10 +88,16 @@ public class ArgvParser {
 	}
 
 	/**
-	 * Parse given list of argv1 and on into key-value pairs. If the type of {@link UnixFlagSpec} is EXIST, the
-	 * resulting destination variable will contain True/False. If the type of {@link UnixFlagSpec} is PARAMETRIZE, the
-	 * destination variable may - either do not exist in the mapping, - or maps to the parameter supplied to that flag
-	 * as a String. This method does not modify internal states and should be safe to call concurrently.
+	 * Parse given list of argv1 and on into key-value pairs.
+	 * <p>
+	 * If the type of {@link UnixFlagSpec} is EXIST, the resulting destination variable will contain True/False.
+	 * <p>
+	 * If the type of {@link UnixFlagSpec} is PARAMETRIZE, the destination variable may
+	 * <ul>
+	 *     <li>either do not exist in the mapping,</li>
+	 *     <li>be found in the mapping by the destination name after applying {@link UnixFlagSpec#transform()}.</li>
+	 * </ul>
+	 * This method does not modify internal states and should be safe to call concurrently.
 	 *
 	 * @param argv1pWithBackslash ordered list of arguments from argv[1] and on
 	 * @param extraTokens         if set to nonnull, parsing will stop upon encountering an unknown token. The remaining

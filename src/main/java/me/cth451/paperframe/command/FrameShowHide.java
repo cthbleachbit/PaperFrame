@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Date;
 
+import static me.cth451.paperframe.util.FrameProperties.getHidden;
 import static me.cth451.paperframe.util.Targeting.findFrameByTargetedEntity;
 
 /**
@@ -29,8 +30,8 @@ public class FrameShowHide implements CommandExecutor {
 		this.plugin = plugin;
 	}
 
-	public static void setShowHide(@NotNull ItemFrame frame, boolean visible, @NotNull Player player) {
-		frame.setVisible(visible);
+	public static void setShowHideByPlayer(@NotNull ItemFrame frame, boolean visible, @NotNull Player player) {
+		FrameProperties.setHidden(frame, !visible);
 		FrameProperties.setHiddenBy(frame, !visible ? player.getName() : null);
 		FrameProperties.setHiddenAt(frame, !visible ? new Date() : null);
 	}
@@ -49,10 +50,10 @@ public class FrameShowHide implements CommandExecutor {
 			// No item frames in range
 			player.sendMessage("Can't find an item frame where you are looking at");
 		} else {
-			boolean isVisible = frame.isVisible();
-			setShowHide(frame, !isVisible, player);
-			final Particle.DustOptions options = new Particle.DustOptions(isVisible ? Color.RED : Color.GREEN, 1.0f);
-			player.sendMessage(isVisible ? "Frame hidden" : "Frame revealed");
+			boolean isHidden = getHidden(frame);
+			setShowHideByPlayer(frame, isHidden, player);
+			final Particle.DustOptions options = new Particle.DustOptions(isHidden ? Color.GREEN : Color.RED, 1.0f);
+			player.sendMessage(isHidden ? "Frame revealed" : "Frame hidden");
 			Drawing.scheduleStickyDraw(this.plugin, () -> Drawing.drawBoundingBox(frame, options), 3, 10);
 		}
 		return true;

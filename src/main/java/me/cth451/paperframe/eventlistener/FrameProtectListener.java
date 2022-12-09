@@ -2,6 +2,7 @@ package me.cth451.paperframe.eventlistener;
 
 import me.cth451.paperframe.PaperFramePlugin;
 import me.cth451.paperframe.util.Drawing;
+import me.cth451.paperframe.util.FrameProperties;
 import org.bukkit.Color;
 import org.bukkit.Particle;
 import org.bukkit.entity.ItemFrame;
@@ -48,7 +49,7 @@ public class FrameProtectListener implements Listener {
 			return;
 		}
 
-		if (!frame.isFixed()) {
+		if (!FrameProperties.getProtected(frame)) {
 			return;
 		}
 
@@ -68,7 +69,7 @@ public class FrameProtectListener implements Listener {
 			return;
 		}
 
-		if (!frame.isFixed()) {
+		if (!FrameProperties.getProtected(frame)) {
 			return;
 		}
 
@@ -92,7 +93,7 @@ public class FrameProtectListener implements Listener {
 			return;
 		}
 
-		if (!frame.isFixed()) {
+		if (!FrameProperties.getProtected(frame)) {
 			return;
 		}
 

@@ -46,8 +46,8 @@ public enum FrameFilter implements Predicate<ItemFrame> {
 	@Override
 	public boolean test(ItemFrame frame) {
 		return switch (this) {
-			case HIDDEN -> !frame.isVisible();
-			case PROTECTED -> frame.isInvulnerable();
+			case HIDDEN -> FrameProperties.getHidden(frame);
+			case PROTECTED -> FrameProperties.getProtected(frame);
 			case STACKED -> {
 				World world = frame.getWorld();
 				Location loc = frame.getLocation();

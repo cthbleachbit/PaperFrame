@@ -60,7 +60,47 @@ public class FrameProperties {
 	}
 
 	/**
-	 * Set/Remove value from namespace key by type
+	 * Wrapper function to get protected status with minecraft native Fixed tag
+	 *
+	 * @param frame frame to check
+	 * @return whether frame is protected
+	 */
+	public static boolean getProtected(@NotNull ItemFrame frame) {
+		return frame.isFixed();
+	}
+
+	/**
+	 * Wrapper function to set protected status with minecraft native Fixed tag
+	 *
+	 * @param frame   frame to check
+	 * @param protect whether the frame should be protected
+	 */
+	public static void setProtected(@NotNull ItemFrame frame, boolean protect) {
+		frame.setFixed(protect);
+	}
+
+	/**
+	 * Wrapper function to get viability/hidden status with minecraft native Visible tag
+	 *
+	 * @param frame frame to check
+	 * @return whether frame is hidden
+	 */
+	public static boolean getHidden(@NotNull ItemFrame frame) {
+		return !frame.isVisible();
+	}
+
+	/**
+	 * Wrapper function to set viability/hidden status with minecraft native Visible tag
+	 *
+	 * @param frame  frame to check
+	 * @param hidden whether the frame should be visible
+	 */
+	public static void setHidden(@NotNull ItemFrame frame, boolean hidden) {
+		frame.setVisible(!hidden);
+	}
+
+	/**
+	 * Set/Remove value from namespace key by type. This is only used for custom keys.
 	 *
 	 * @param frame item frame to modify
 	 * @param key   key to modify

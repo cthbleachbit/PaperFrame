@@ -54,8 +54,8 @@ public class FrameStat implements CommandExecutor {
 			ItemStack content = frame.getItem();
 
 			// Check properties
-			boolean isHidden = !frame.isVisible();
-			boolean isProtected = frame.isFixed();
+			boolean isHidden = FrameProperties.getHidden(frame);
+			boolean isProtected = FrameProperties.getProtected(frame);
 			boolean isEmpty = FrameFilter.EMPTY.test(frame);
 			boolean hasMeta = (isEmpty || content.hasItemMeta()) && content.getItemMeta() != null;
 

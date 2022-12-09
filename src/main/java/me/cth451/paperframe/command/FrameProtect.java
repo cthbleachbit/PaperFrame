@@ -54,8 +54,8 @@ public class FrameProtect implements CommandExecutor {
 		this.plugin = plugin;
 	}
 
-	public static void setProtected(@NotNull ItemFrame frame, boolean active, @NotNull Player player) {
-		frame.setFixed(active);
+	public static void setProtectedByPlayer(@NotNull ItemFrame frame, boolean active, @NotNull Player player) {
+		setProtected(frame, active);
 		setProtectedBy(frame, active ? player.getName() : null);
 		setProtectedAt(frame, active ? new Date() : null);
 	}
@@ -86,17 +86,17 @@ public class FrameProtect implements CommandExecutor {
 			player.sendMessage(ChatColor.RED + "Must specify either --on or --off");
 			return false;
 		} else if (!((boolean) parsed.get("on") || (boolean) parsed.get("off"))) {
-			player.sendMessage("Frame is " + (frame.isFixed() ? "protected by " + getProtectedBy(
+			player.sendMessage("Frame is " + (getProtected(frame) ? "protected by " + getProtectedBy(
 					frame) + " at " + getProtectedAt(frame) : "unprotected"));
 			return true;
 		}
 
-		// True if protecting, False if un-protecting
+		/* True if protecting, False if un-protecting */
 		boolean protecting = (boolean) parsed.get("on");
 		boolean changed = false;
 
-		if (frame.isFixed() != protecting) {
-			setProtected(frame, protecting, player);
+		if (getProtected(frame) != protecting) {
+			setProtectedByPlayer(frame, protecting, player);
 			changed = true;
 		}
 
@@ -105,7 +105,7 @@ public class FrameProtect implements CommandExecutor {
 				ChatColor.GREEN + "Frame"
 						+ (changed ? " " : " is already ")
 						+ (protecting ? "protected" : "unprotected")
-						+ (((!changed) && frame.isFixed()) ?
+						+ (((!changed) && getProtected(frame)) ?
 						(" by " + getProtectedBy(frame) + " at " + getProtectedAt(frame)) : ""));
 		Drawing.scheduleStickyDraw(this.plugin, () -> Drawing.drawBoundingBox(frame, options), 3, 10);
 		return true;
