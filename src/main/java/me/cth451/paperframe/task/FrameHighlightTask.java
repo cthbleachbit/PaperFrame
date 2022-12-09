@@ -28,14 +28,14 @@ public class FrameHighlightTask implements Runnable {
 
 	@Override
 	public void run() {
-		// Need to use hash set to ensure duplicate frames are not added
+		/* Need to use hash set to ensure duplicate frames are not added */
 		HashSet<ItemFrame> frames = new HashSet<>();
 
 		synchronized (PaperFramePlugin.activeHighlightUsers) {
 			for (Map.Entry<UUID, HighlightOptions> entry : PaperFramePlugin.activeHighlightUsers.entrySet()) {
 				UUID playerID = entry.getKey();
-				HighlightOptions.HighlightFilter filter = entry.getValue().filter;
-				double range = entry.getValue().range;
+				HighlightOptions options = entry.getValue();
+				double range = options.range;
 
 				Player player = Bukkit.getPlayer(playerID);
 				// Just in case that a player has left
@@ -48,7 +48,7 @@ public class FrameHighlightTask implements Runnable {
 				frames.addAll(nearby.stream()
 				                    .filter(ItemFrame.class::isInstance)
 				                    .map(ItemFrame.class::cast)
-				                    .filter(filter)
+				                    .filter(options)
 				                    .toList());
 			}
 

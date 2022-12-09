@@ -28,6 +28,8 @@ public class FrameHighlight implements CommandExecutor {
 			new UnixFlagSpec("hidden", 'h', UnixFlagSpec.FlagType.EXIST, "hidden"),
 			/* Show protected frames only */
 			new UnixFlagSpec("protected", 'p', UnixFlagSpec.FlagType.EXIST, "protected"),
+			/* Show frames that are overlapping with other frames */
+			new UnixFlagSpec("stacked", 's', UnixFlagSpec.FlagType.EXIST, "stacked"),
 			/* Radius in blocks which to find frames in */
 			new UnixFlagSpec("radius", 'r', UnixFlagSpec.FlagType.PARAMETRIZE, "radius", Double::parseDouble),
 	};
@@ -38,6 +40,21 @@ public class FrameHighlight implements CommandExecutor {
 		this.plugin = plugin;
 	}
 
+	/**
+	 * Toggle highlight status of item frames near you. Multiple filters may be stacked together.
+	 * <ul>
+	 * <li>-h = hidden ones only</li>
+	 * <li>-p = protected ones only</li>
+	 * <li>-s = overlapping / stacked ones only</li>
+	 * <li>-r N = highlight within radius N</li>
+	 * </ul>
+	 *
+	 * @param commandSender Source of the command
+	 * @param command       Command which was executed
+	 * @param argv0         Alias of the command which was used
+	 * @param argv1         Passed command arguments
+	 * @return whether the invocation is sound
+	 */
 	@Override
 	public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String argv0, @NotNull String[] argv1) {
 		if (!(commandSender instanceof Player player)) {
@@ -45,7 +62,7 @@ public class FrameHighlight implements CommandExecutor {
 			return false;
 		}
 
-		HighlightOptions options = new HighlightOptions(ALL, this.plugin.getConfig().getDouble(
+		HighlightOptions options = new HighlightOptions(this.plugin.getConfig().getDouble(
 				"commands.framehighlight.default_radius", HighlightOptions.DEFAULT_RADIUS));
 
 		HashMap<String, Object> parsed;
@@ -59,13 +76,18 @@ public class FrameHighlight implements CommandExecutor {
 		if (parsed.containsKey("radius")) {
 			options.range = (double) parsed.get("radius");
 		}
-		if (((boolean) parsed.get("hidden")) && ((boolean) parsed.get("protected"))) {
-			player.sendMessage(ChatColor.RED + "--hidden and --protected must not be used at the same time");
-			return false;
+
+		if ((boolean) parsed.get("hidden")) {
+			options.filters.add(HIDDEN);
 		}
 
-		options.filter = (boolean) parsed.get("hidden") ? HIDDEN : ((boolean) parsed.get(
-				"protected") ? PROTECTED : ALL);
+		if ((boolean) parsed.get("protected")) {
+			options.filters.add(PROTECTED);
+		}
+
+		if ((boolean) parsed.get("stacked")) {
+			options.filters.add(STACKED);
+		}
 
 		double confMaxRadius = this.plugin.getConfig()
 		                                  .getDouble("commands.framehighlight.max_radius", HighlightOptions.MAX_RADIUS);
@@ -85,9 +107,7 @@ public class FrameHighlight implements CommandExecutor {
 		}
 
 		if (enabling) {
-			String enablingMessage = String.format("Highlighting %s frames within %s radius",
-			                                       options.filter, options.range);
-			player.sendMessage(ChatColor.GREEN + enablingMessage);
+			player.sendMessage(ChatColor.GREEN + options.toString());
 			this.plugin.startPlayerUpdate();
 		} else {
 			player.sendMessage(ChatColor.GREEN + "Item frame highlighting disabled");

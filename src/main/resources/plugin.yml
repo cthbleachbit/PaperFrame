@@ -18,11 +18,12 @@ commands:
       - fprot
   framehighlight:
     description: |
-      Toggle highlight status of item frames near you
+      Toggle highlight status of item frames near you. Multiple filters maybe stacked together.
       -h = hidden ones only
       -p = protected ones only
+      -s = overlapping / stacked ones only
       -r N = highlight within radius N
-    usage: "/framehighlight [-h] [-p] [-r radius]"
+    usage: "/framehighlight [-h] [-p] [-s] [-r radius]"
     permission: "paperframe.highlight"
     aliases:
       - fh
