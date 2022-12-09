@@ -12,6 +12,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+import static me.cth451.paperframe.util.Targeting.findStackedFrameByTargetedEntity;
+
 public class FrameUnmap implements CommandExecutor {
 	/**
 	 * Ref to plugin instance itself
@@ -28,8 +30,20 @@ public class FrameUnmap implements CommandExecutor {
 	 * @param player the player to check
 	 * @return number of item frames removed
 	 */
-	public static long removeFramesTargeted(@NotNull Player player) {
+	public static long removeFramesTargetedBlockFace(@NotNull Player player) {
 		List<ItemFrame> filtered = Targeting.findFrameByAttachedBlockFace(player);
+		filtered.forEach(Entity::remove);
+		return filtered.size();
+	}
+
+	/**
+	 * Remove all item frames by targeted entity - the frames might be in the air and not attached to a block.
+	 *
+	 * @param player the player to check
+	 * @return number of item frames removed
+	 */
+	public static long removeFramesTargetedEntity(@NotNull Player player) {
+		List<ItemFrame> filtered = findStackedFrameByTargetedEntity(player);
 		filtered.forEach(Entity::remove);
 		return filtered.size();
 	}
@@ -41,7 +55,7 @@ public class FrameUnmap implements CommandExecutor {
 			return false;
 		}
 
-		long removed = removeFramesTargeted(player);
+		long removed = removeFramesTargetedEntity(player);
 		player.sendMessage(String.format("Removed %d item frames", removed));
 		return true;
 	}

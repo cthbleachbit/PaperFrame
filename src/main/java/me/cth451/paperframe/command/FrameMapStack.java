@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-import static me.cth451.paperframe.command.FrameUnmap.removeFramesTargeted;
+import static me.cth451.paperframe.command.FrameUnmap.removeFramesTargetedBlockFace;
 
 /**
  * framemaps [-g] [-a] id1 id2 id3....
@@ -100,7 +100,7 @@ public class FrameMapStack implements CommandExecutor {
 		final Location containingBlock = targetBlock.getRelative(face, 1).getLocation();
 
 		if (!append) {
-			long removed = removeFramesTargeted(player);
+			long removed = removeFramesTargetedBlockFace(player);
 			if (removed > 0)
 				player.sendMessage(String.format("Removed %d item frames", removed));
 		}

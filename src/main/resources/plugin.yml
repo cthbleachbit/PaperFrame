@@ -48,7 +48,7 @@ commands:
       - fstat
   framemaps:
     description: |
-      Spawn protected hidden item frames containing specific maps at your cursor.
+      Spawn protected hidden item frames containing specific maps on the block face under cross hair.
       -g = spawn with glowing item frames
       -a = append only, otherwise existing frames in the occupying space will be removed
     usage: "/framemaps [-ga] id1 id2 ...."
