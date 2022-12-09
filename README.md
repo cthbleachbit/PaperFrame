@@ -50,9 +50,12 @@ Spawn multiple item frames attached to the block you are looking at and place ma
 Note that this will delete any item frames that already occupy that block surface if `-a` is not specified. Generated
 frames will be hidden and protected by default.
 
+This command cannot directly create in-the-air frames. A supporting block must exist for the frames to spawn, but the
+supporting block can be removed once the stack has been created.
+
 * Use `-g` to spawn maps with glowing item frames.
 * Use `-a` to skip removal of existing frames and place new frames on top of existing ones.
 
-## `/funmap`
+## `/frameunmap`, `/funmap`
 
-Delete all item frames that attached to the block you are looking at.
+Delete the item frame stack under the cross hair. Frames doesn't need to be affixed to a block and may be in-the-air.
