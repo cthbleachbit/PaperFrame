@@ -1,6 +1,7 @@
 package me.cth451.paperframe.command;
 
 import me.cth451.paperframe.PaperFramePlugin;
+import me.cth451.paperframe.util.FrameFilter;
 import me.cth451.paperframe.util.HighlightOptions;
 import me.cth451.paperframe.util.getopt.ArgvParser;
 import me.cth451.paperframe.util.getopt.UnixFlagSpec;
@@ -15,7 +16,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import static me.cth451.paperframe.util.HighlightOptions.HighlightFilter.*;
+import static me.cth451.paperframe.util.FrameFilter.*;
 
 /**
  * highlight the frames in range
@@ -25,11 +26,13 @@ public class FrameHighlight implements CommandExecutor {
 
 	private final static UnixFlagSpec[] arguments = {
 			/* Show hidden frames only */
-			new UnixFlagSpec("hidden", 'h', UnixFlagSpec.FlagType.EXIST, "hidden"),
+			HIDDEN.toFlagSpec(),
 			/* Show protected frames only */
-			new UnixFlagSpec("protected", 'p', UnixFlagSpec.FlagType.EXIST, "protected"),
+			PROTECTED.toFlagSpec(),
 			/* Show frames that are overlapping with other frames */
-			new UnixFlagSpec("stacked", 's', UnixFlagSpec.FlagType.EXIST, "stacked"),
+			STACKED.toFlagSpec(),
+			/* Show frames that are empty only */
+			EMPTY.toFlagSpec(),
 			/* Radius in blocks which to find frames in */
 			new UnixFlagSpec("radius", 'r', UnixFlagSpec.FlagType.PARAMETRIZE, "radius", Double::parseDouble),
 	};
@@ -46,6 +49,7 @@ public class FrameHighlight implements CommandExecutor {
 	 * <li>-h = hidden ones only</li>
 	 * <li>-p = protected ones only</li>
 	 * <li>-s = overlapping / stacked ones only</li>
+	 * <li>-e = empty frames only</li>
 	 * <li>-r N = highlight within radius N</li>
 	 * </ul>
 	 *
@@ -77,16 +81,13 @@ public class FrameHighlight implements CommandExecutor {
 			options.range = (double) parsed.get("radius");
 		}
 
-		if ((boolean) parsed.get("hidden")) {
-			options.filters.add(HIDDEN);
-		}
-
-		if ((boolean) parsed.get("protected")) {
-			options.filters.add(PROTECTED);
-		}
-
-		if ((boolean) parsed.get("stacked")) {
-			options.filters.add(STACKED);
+		for (FrameFilter f : FrameFilter.values()) {
+			if (parsed.containsKey(f.toString())) {
+				if ((boolean) parsed.get(f.toString()))
+					options.filters.add(f);
+			} else {
+				plugin.getLogger().severe(String.format("Filter %s doesn't exist?! Please submit a bug report!", f));
+			}
 		}
 
 		double confMaxRadius = this.plugin.getConfig()

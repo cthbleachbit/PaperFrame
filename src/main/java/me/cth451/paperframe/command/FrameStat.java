@@ -1,9 +1,9 @@
 package me.cth451.paperframe.command;
 
 import me.cth451.paperframe.PaperFramePlugin;
+import me.cth451.paperframe.util.FrameFilter;
 import me.cth451.paperframe.util.FrameProperties;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -56,7 +56,7 @@ public class FrameStat implements CommandExecutor {
 			// Check properties
 			boolean isHidden = !frame.isVisible();
 			boolean isProtected = frame.isFixed();
-			boolean isEmpty = (content.getType() == Material.AIR || content.getAmount() == 0);
+			boolean isEmpty = FrameFilter.EMPTY.test(frame);
 			boolean hasMeta = (isEmpty || content.hasItemMeta()) && content.getItemMeta() != null;
 
 			String itemDesc = isEmpty ?

@@ -11,7 +11,7 @@ commands:
       (no arguments) = check protection status
       --on, -1 = turn on protection
       --off, -0 = turn off protection
-    usage: "/frameprotect [--on|--off]"
+    usage: "/frameprotect --on|--off"
     permission: "paperframe.protect"
     aliases:
       - fprotect
@@ -22,8 +22,9 @@ commands:
       -h = hidden ones only
       -p = protected ones only
       -s = overlapping / stacked ones only
+      -e = empty frames only<
       -r N = highlight within radius N
-    usage: "/framehighlight [-h] [-p] [-s] [-r radius]"
+    usage: "/framehighlight [-hpse] [-r radius]"
     permission: "paperframe.highlight"
     aliases:
       - fh
@@ -50,7 +51,7 @@ commands:
       Spawn protected hidden item frames containing specific maps at your cursor.
       -g = spawn with glowing item frames
       -a = append only, otherwise existing frames in the occupying space will be removed
-    usage: "/framemaps [-g] [-a] id1 id2 ...."
+    usage: "/framemaps [-ga] id1 id2 ...."
     permission: "paperframe.mapstack"
     aliases:
       - fmaps
