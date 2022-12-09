@@ -9,7 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.BoundingBox;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
 
 public class Targeting {
@@ -22,7 +22,7 @@ public class Targeting {
 	 * Find an item frame that a player is looking at.
 	 * <p>
 	 * Note that this function can only return one targeted entity. To find multiple item frames stacked in the same
-	 * space created from /framemaps, use {@link Targeting#findFrameByAttachedBlockFace} instead.
+	 * space created from /framemaps, use {@link Targeting#findStackedFrameByTargetedEntity} instead.
 	 *
 	 * @param player the player to check
 	 * @return ONE OF the item frames player is looking at.
@@ -41,20 +41,47 @@ public class Targeting {
 	}
 
 	/**
+	 * Find ALL item frames that a player is looking at.
+	 * <p>
+	 * To find item frames based on targeted block, use {@link Targeting#findFrameByAttachedBlockFace} instead.
+	 *
+	 * @param player the player to check
+	 * @return list of item frames player is looking at. The returned list is unmodifiable.
+	 */
+	public static List<ItemFrame> findStackedFrameByTargetedEntity(@NotNull Player player) {
+		/* Find one first */
+		Entity entity = player.getTargetEntity(SELECTION_RANGE);
+
+		if (entity == null) {
+			return Collections.emptyList();
+		}
+
+		if (!(entity instanceof ItemFrame frame)) {
+			return Collections.emptyList();
+		}
+
+		/* Find all in the same region */
+		return frame.getWorld()
+		            .getNearbyEntitiesByType(ItemFrame.class, frame.getLocation(), 0.015625d)
+		            .stream()
+		            .toList();
+	}
+
+	/**
 	 * Find all item frame that is attached to a block on a specific face that the player is staring
 	 *
 	 * @param player the player to check
-	 * @return a list of item frames that exist on that block face
+	 * @return a list of item frames that exist on that block face. The returned list is unmodifiable.
 	 */
 	public static List<ItemFrame> findFrameByAttachedBlockFace(@NotNull Player player) {
 		TargetBlockInfo targetInfo = player.getTargetBlockInfo(Targeting.SELECTION_RANGE,
 		                                                       TargetBlockInfo.FluidMode.NEVER);
 		if (targetInfo == null) {
-			return new LinkedList<>();
+			return Collections.emptyList();
 		}
 
 		if (targetInfo.getBlock().getType().isAir()) {
-			return new LinkedList<>();
+			return Collections.emptyList();
 		}
 
 		final Block targetBlock = targetInfo.getBlock();
