@@ -1,8 +1,6 @@
 package me.cth451.paperframe.util;
 
 import me.cth451.paperframe.PaperFramePlugin;
-import me.cth451.paperframe.dependency.WorldEditAPI;
-import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
@@ -13,6 +11,11 @@ import java.util.List;
 import java.util.function.Predicate;
 
 public class HighlightOptions implements Predicate<ItemFrame> {
+
+	/**
+	 * Pointer to plugin instance - will be initialized from {@link PaperFramePlugin#onEnable()}
+	 */
+	public static PaperFramePlugin plugin = null;
 
 	/**
 	 * A list of filters to be applied on top of each other. An empty list is equivalent to a pass-all filter.
@@ -26,7 +29,7 @@ public class HighlightOptions implements Predicate<ItemFrame> {
 
 	/**
 	 * Whether the user wants to use WorldEdit to find frames instead of a numerical range.
-	 * {@link HighlightOptions##range} is unused if this is set to true.
+	 * {@link HighlightOptions#range} is unused if this is set to true.
 	 */
 	public boolean worldedit = false;
 
@@ -74,10 +77,11 @@ public class HighlightOptions implements Predicate<ItemFrame> {
 			             .filter(ItemFrame.class::isInstance)
 			             .map(ItemFrame.class::cast)
 			             .toList();
-		if (PaperFramePlugin.WorldEdit == null) {
+		if (plugin.getDependencyManager().isWorldEditAvailable(null)) {
+			return plugin.getDependencyManager().getCuboidSelection(player);
+		} else {
 			return new LinkedList<>();
 		}
-		return PaperFramePlugin.WorldEdit.getCuboidSelection(player);
 	}
 
 	/**

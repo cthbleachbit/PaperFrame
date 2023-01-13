@@ -22,6 +22,11 @@ public class Targeting {
 	public static final int SELECTION_RANGE = 6;
 
 	/**
+	 * Pointer back to plugin. Will be initialized by {@link PaperFramePlugin#onEnable}
+	 */
+	public static PaperFramePlugin plugin = null;
+
+	/**
 	 * Find an item frame that a player is looking at.
 	 * <p>
 	 * Note that this function can only return one targeted entity. To find multiple item frames stacked in the same
@@ -131,14 +136,14 @@ public class Targeting {
 	 * active on this server.
 	 *
 	 * @param player requesting player
-	 * @return the list of item frames within WorldEdit selection range (maybe empty), or null if and only id not active.
+	 * @return the list of item frames within WorldEdit selection range (maybe empty), or null if and only WE is not
+	 * 		active.
 	 */
 	public static List<ItemFrame> byWorldEditCuboid(@NotNull Player player) {
-		if (PaperFramePlugin.WorldEdit == null) {
-			player.sendMessage(ChatColor.RED + "WorldEdit is not found on this server. Cannot use `-w`.");
+		if (!plugin.getDependencyManager().isWorldEditAvailable(null)) {
 			return Collections.emptyList();
 		} else {
-			return PaperFramePlugin.WorldEdit.getCuboidSelection(player, true);
+			return plugin.getDependencyManager().getCuboidSelection(player, true);
 		}
 	}
 }

@@ -13,7 +13,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.LinkedList;
 import java.util.List;
 
-public class WorldEditAPI {
+/**
+ * Actual API calls into WorldEdit. This class must not be instantiated when WorldEdit plugin is missing on the server.
+ * Thus, this class is package-private, as access to these APIs must go through {@link DependencyManager}.
+ */
+class WorldEditLink implements IWorldEdit {
 	private final PaperFramePlugin plugin;
 
 	/**
@@ -21,7 +25,7 @@ public class WorldEditAPI {
 	 *
 	 * @param plugin initializing plugin
 	 */
-	public WorldEditAPI(@NotNull PaperFramePlugin plugin) {
+	public WorldEditLink(@NotNull PaperFramePlugin plugin) {
 		this.plugin = plugin;
 		this.plugin.getLogger().info("WorldEdit integration initialized.");
 	}
@@ -32,7 +36,7 @@ public class WorldEditAPI {
 	 * @param player requesting player
 	 * @return list of item frames contained in the selection, or empty list if the selection is not a cube
 	 */
-	public List<ItemFrame> getCuboidSelection(@NotNull org.bukkit.entity.Player player) {
+	public @NotNull List<ItemFrame> getCuboidSelection(@NotNull org.bukkit.entity.Player player) {
 		return getCuboidSelection(player, false);
 	}
 
@@ -43,7 +47,7 @@ public class WorldEditAPI {
 	 * @param interactive whether the player should be prompted to make a selection
 	 * @return list of item frames contained in the selection, or empty list if the selection is not a cube
 	 */
-	public List<ItemFrame> getCuboidSelection(@NotNull org.bukkit.entity.Player player, boolean interactive) {
+	public @NotNull List<ItemFrame> getCuboidSelection(@NotNull org.bukkit.entity.Player player, boolean interactive) {
 
 		com.sk89q.worldedit.entity.Player actor = BukkitAdapter.adapt(player);
 		SessionManager manager = com.sk89q.worldedit.WorldEdit.getInstance().getSessionManager();

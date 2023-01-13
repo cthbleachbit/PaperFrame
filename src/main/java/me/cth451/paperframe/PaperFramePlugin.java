@@ -1,10 +1,11 @@
 package me.cth451.paperframe;
 
 import me.cth451.paperframe.command.*;
-import me.cth451.paperframe.dependency.WorldEditAPI;
+import me.cth451.paperframe.dependency.DependencyManager;
 import me.cth451.paperframe.eventlistener.FrameProtectListener;
-import me.cth451.paperframe.task.*;
+import me.cth451.paperframe.task.FrameHighlightTask;
 import me.cth451.paperframe.util.HighlightOptions;
+import me.cth451.paperframe.util.Targeting;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -20,8 +21,8 @@ public class PaperFramePlugin extends JavaPlugin {
 	private int activeUpdateTask = -1;
 	public static final HashMap<UUID, HighlightOptions> activeHighlightUsers = new HashMap<>();
 
-	/* WorldEdit API, null if WE is not active */
-	public static WorldEditAPI WorldEdit = null;
+	/* Dependency manager */
+	private DependencyManager dependencyManager = null;
 
 	private void registerCommands() {
 		Objects.requireNonNull(this.getCommand("frameprotect")).setExecutor(new FrameProtect(this));
@@ -70,15 +71,19 @@ public class PaperFramePlugin extends JavaPlugin {
 		}
 	}
 
+	public DependencyManager getDependencyManager() {
+		return this.dependencyManager;
+	}
+
 	@Override
 	public void onEnable() {
 		this.registerCommands();
 		this.registerEventListeners();
 		this.saveDefaultConfig();
-		/* Check WorldEdit availability */
-		if (this.getServer().getPluginManager().getPlugin("WorldEdit") != null) {
-			WorldEdit = new WorldEditAPI(this);
-		}
+		this.dependencyManager = new DependencyManager(this);
+
+		HighlightOptions.plugin = this;
+		Targeting.plugin = this;
 	}
 
 	@Override
