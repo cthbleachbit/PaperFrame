@@ -1,6 +1,12 @@
 package me.cth451.paperframe.util;
 
+import me.cth451.paperframe.PaperFramePlugin;
+import me.cth451.paperframe.dependency.WorldEditAPI;
+import org.bukkit.ChatColor;
+import org.bukkit.World;
 import org.bukkit.entity.ItemFrame;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -19,6 +25,12 @@ public class HighlightOptions implements Predicate<ItemFrame> {
 	public double range;
 
 	/**
+	 * Whether the user wants to use WorldEdit to find frames instead of a numerical range.
+	 * {@link HighlightOptions##range} is unused if this is set to true.
+	 */
+	public boolean worldedit = false;
+
+	/**
 	 * Default frame-finding radius - maybe overridden from configuration
 	 */
 	public static final double DEFAULT_RADIUS = 5;
@@ -29,6 +41,7 @@ public class HighlightOptions implements Predicate<ItemFrame> {
 
 	/**
 	 * Construct highlight options with selection range only
+	 *
 	 * @param range selection range
 	 */
 	public HighlightOptions(double range) {
@@ -38,12 +51,33 @@ public class HighlightOptions implements Predicate<ItemFrame> {
 
 	/**
 	 * Construct highlight options with selection range and a list of filters
+	 *
 	 * @param filters the list of filters to apply
-	 * @param range selection range
+	 * @param range   selection range
 	 */
 	public HighlightOptions(List<FrameFilter> filters, double range) {
 		this.filters = filters;
 		this.range = range;
+	}
+
+	/**
+	 * Gather data source for highlighting.
+	 *
+	 * @param player Initiating player
+	 * @return list of item frames.
+	 */
+	public List<ItemFrame> source(@NotNull Player player) {
+		World world = player.getWorld();
+		if (!worldedit)
+			return player.getNearbyEntities(range, range, range)
+			             .stream()
+			             .filter(ItemFrame.class::isInstance)
+			             .map(ItemFrame.class::cast)
+			             .toList();
+		if (PaperFramePlugin.WorldEdit == null) {
+			return new LinkedList<>();
+		}
+		return PaperFramePlugin.WorldEdit.getCuboidSelection(player);
 	}
 
 	/**
@@ -59,12 +93,13 @@ public class HighlightOptions implements Predicate<ItemFrame> {
 
 	@Override
 	public String toString() {
+		String rangeDesc = worldedit ? "WorldEdit selection" : range + " blocks";
 		String filterDesc =
 				filters.isEmpty()
 						? "none"
 						: String.join(", ",
 						              filters.stream().map(FrameFilter::toString)
 						                     .toList());
-		return String.format("Highlighting within %f blocks with filter %s", range, filterDesc);
+		return String.format("Highlighting within %s with filter %s", rangeDesc, filterDesc);
 	}
 }

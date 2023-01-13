@@ -33,6 +33,17 @@ public class WorldEditAPI {
 	 * @return list of item frames contained in the selection, or empty list if the selection is not a cube
 	 */
 	public List<ItemFrame> getCuboidSelection(@NotNull org.bukkit.entity.Player player) {
+		return getCuboidSelection(player, false);
+	}
+
+	/**
+	 * Get frames within a cuboid
+	 *
+	 * @param player      requesting player
+	 * @param interactive whether the player should be prompted to make a selection
+	 * @return list of item frames contained in the selection, or empty list if the selection is not a cube
+	 */
+	public List<ItemFrame> getCuboidSelection(@NotNull org.bukkit.entity.Player player, boolean interactive) {
 
 		com.sk89q.worldedit.entity.Player actor = BukkitAdapter.adapt(player);
 		SessionManager manager = com.sk89q.worldedit.WorldEdit.getInstance().getSessionManager();
@@ -44,7 +55,8 @@ public class WorldEditAPI {
 			region = localSession.getSelection(selectionWorld);
 			if (!(region instanceof CuboidRegion)) throw new IncompleteRegionException();
 		} catch (IncompleteRegionException ex) {
-			actor.printError(TextComponent.of("Please make a cuboid region selection first."));
+			if (interactive)
+				actor.printError(TextComponent.of("Please make a cuboid region selection first."));
 			return new LinkedList<>();
 		}
 

@@ -9,11 +9,11 @@ softdepend:
 commands:
   frameprotect:
     description: |
-      Protect / un-protect / Check the item frame you are looking at
-      (no arguments) = check protection status
+      Protect / un-protect the item frame you are looking at
       --on, -1 = turn on protection
       --off, -0 = turn off protection
-    usage: "/frameprotect --on|--off"
+      -w = operate within WorldEdit selected cuboid instead of the frame under cursor
+    usage: "/frameprotect <--on|--off> <-w>"
     permission: "paperframe.protect"
     aliases:
       - fprotect
@@ -24,9 +24,10 @@ commands:
       -h = hidden ones only
       -p = protected ones only
       -s = overlapping / stacked ones only
-      -e = empty frames only<
+      -e = empty frames only
       -r N = highlight within radius N
-    usage: "/framehighlight [-hpse] [-r radius]"
+      -w = highlight within WorldEdit selected cuboid, overrides -r
+    usage: "/framehighlight <-hpse> [-r radius|-w]"
     permission: "paperframe.highlight"
     aliases:
       - fh
@@ -53,7 +54,7 @@ commands:
       Spawn protected hidden item frames containing specific maps on the block face under cross hair.
       -g = spawn with glowing item frames
       -a = append only, otherwise existing frames in the occupying space will be removed
-    usage: "/framemaps [-ga] id1 id2 ...."
+    usage: "/framemaps <-ga> id1 id2 ...."
     permission: "paperframe.mapstack"
     aliases:
       - fmaps

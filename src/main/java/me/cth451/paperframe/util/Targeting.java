@@ -138,7 +138,7 @@ public class Targeting {
 			player.sendMessage(ChatColor.RED + "WorldEdit is not found on this server. Cannot use `-w`.");
 			return Collections.emptyList();
 		} else {
-			return PaperFramePlugin.WorldEdit.getCuboidSelection(player);
+			return PaperFramePlugin.WorldEdit.getCuboidSelection(player, true);
 		}
 	}
 }

@@ -44,10 +44,8 @@ public class FrameHighlightTask implements Runnable {
 					continue;
 				}
 
-				List<Entity> nearby = player.getNearbyEntities(range, range, range);
+				List<ItemFrame> nearby = options.source(player);
 				frames.addAll(nearby.stream()
-				                    .filter(ItemFrame.class::isInstance)
-				                    .map(ItemFrame.class::cast)
 				                    .filter(options)
 				                    .toList());
 			}

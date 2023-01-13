@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -35,6 +36,8 @@ public class FrameHighlight implements CommandExecutor {
 			EMPTY.toFlagSpec(),
 			/* Radius in blocks which to find frames in */
 			new UnixFlagSpec("radius", 'r', UnixFlagSpec.FlagType.PARAMETRIZE, "radius", Double::parseDouble),
+			/* Whether selection should be made from WorldEdit cuboid */
+			new UnixFlagSpec("use-we", 'w', UnixFlagSpec.FlagType.EXIST, "use-we"),
 	};
 
 	private final static ArgvParser argvParser = new ArgvParser(Arrays.asList(arguments));
@@ -79,6 +82,14 @@ public class FrameHighlight implements CommandExecutor {
 
 		if (parsed.containsKey("radius")) {
 			options.range = (double) parsed.get("radius");
+		}
+
+		if ((boolean) parsed.get("use-we")) {
+			if (PaperFramePlugin.WorldEdit == null) {
+				player.sendMessage(ChatColor.RED + "WorldEdit is not found on this server. Cannot use `-w`.");
+				return true;
+			}
+			options.worldedit = true;
 		}
 
 		for (FrameFilter f : FrameFilter.values()) {
