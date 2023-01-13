@@ -6,6 +6,7 @@ import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
 import java.util.Date;
 
 import static me.cth451.paperframe.util.FrameProperties.*;
@@ -58,12 +59,19 @@ public class FrameProtect extends ToggleCommandExecutor {
 	}
 
 	@Override
-	protected String fmtStatusChanged(@NotNull ItemFrame frame, boolean newState) {
-		return "Frame " + (newState ? "protected" : "protection removed");
+	protected String actionToString(Action action) {
+		return switch (action) {
+			case TOGGLE -> "Toggled protection for";
+			case ENABLE -> "Protected";
+			case DISABLE -> "Removed protection for";
+		};
 	}
 
 	@Override
-	protected String fmtNoChangeNeeded(@NotNull ItemFrame frame, boolean currentState) {
-		return "Frame is already " + (currentState ? "protected" : "unprotected");
+	protected String fmtStatusChanged(@NotNull Collection<ItemFrame> changeset, Action action) {
+		if (changeset.isEmpty()) {
+			return "No changes needed.";
+		}
+		return String.format("%s %d frames.", actionToString(action), changeset.size());
 	}
 }

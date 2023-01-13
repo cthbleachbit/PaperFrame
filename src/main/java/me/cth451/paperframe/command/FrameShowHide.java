@@ -6,12 +6,13 @@ import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
 import java.util.Date;
 
 import static me.cth451.paperframe.util.FrameProperties.*;
 
 /**
- * Reveal / Hide an item frame. This command make use of internal Fixed tag.
+ * Reveal / Hide an item frame. This command make use of internal Visible tag. Enable state is hidden.
  */
 public class FrameShowHide extends ToggleCommandExecutor {
 
@@ -43,12 +44,19 @@ public class FrameShowHide extends ToggleCommandExecutor {
 	}
 
 	@Override
-	protected String fmtStatusChanged(@NotNull ItemFrame frame, boolean newState) {
-		return "Frame " + (newState ? "hidden" : "revealed");
+	protected String actionToString(Action action) {
+		return switch (action) {
+			case TOGGLE -> "Toggled visibility for";
+			case ENABLE -> "Hidden";
+			case DISABLE -> "Revealed";
+		};
 	}
 
 	@Override
-	protected String fmtNoChangeNeeded(@NotNull ItemFrame frame, boolean currentState) {
-		return "Frame is already " + (currentState ? "hidden" : "visible");
+	protected String fmtStatusChanged(@NotNull Collection<ItemFrame> changeset, Action action) {
+		if (changeset.isEmpty()) {
+			return "No changes needed.";
+		}
+		return String.format("%s %d frames.", actionToString(action), changeset.size());
 	}
 }

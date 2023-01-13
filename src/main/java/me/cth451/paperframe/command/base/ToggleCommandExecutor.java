@@ -14,17 +14,19 @@ import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import static me.cth451.paperframe.util.Targeting.findFrameByTargetedEntity;
 
 /**
  * An abstract class defining a toggle switch on a frame property.
  * <p>
- *     When used without argument this command acts as a toggle switch.
+ * When used without argument this command acts as a toggle switch.
  * <p>
- *     When used with `-1` or `-0` this command turns the property on or off.
+ * When used with `-1` or `-0` this command turns the property on or off.
+ * <p>
+ * `-w` causes the command will act on all frames within WorldEdit selection range instead of the frame under the
+ * cursor. WorldEdit must be active on the server. Otherwise, the command will fail with an error message in the chat.
  */
 public abstract class ToggleCommandExecutor implements CommandExecutor {
 	protected final PaperFramePlugin plugin;
@@ -32,10 +34,33 @@ public abstract class ToggleCommandExecutor implements CommandExecutor {
 	protected final static UnixFlagSpec[] arguments = {
 			new UnixFlagSpec("on", '1', UnixFlagSpec.FlagType.EXIST, "on"),
 			new UnixFlagSpec("off", '0', UnixFlagSpec.FlagType.EXIST, "off"),
+			new UnixFlagSpec("use-we", 'w', UnixFlagSpec.FlagType.EXIST, "use-we"),
 	};
 
 	protected final static ArgvParser argvParser = new ArgvParser(List.of(arguments));
 
+	/**
+	 * Action specified by the user
+	 */
+	protected enum Action {
+		TOGGLE,
+		ENABLE,
+		DISABLE;
+	}
+
+	/**
+	 * Convert an action to command specific "verb"
+	 *
+	 * @param action player action
+	 * @return appropriate description for the property controlled by the command
+	 */
+	protected abstract String actionToString(Action action);
+
+	/**
+	 * Default constructor
+	 *
+	 * @param plugin plugin instance
+	 */
 	protected ToggleCommandExecutor(PaperFramePlugin plugin) {
 		this.plugin = plugin;
 	}
@@ -58,20 +83,42 @@ public abstract class ToggleCommandExecutor implements CommandExecutor {
 	protected abstract void setter(@NotNull ItemFrame frame, boolean enable, @NotNull Player player);
 
 	/**
-	 * @param frame    frame checked
-	 * @param newState new state
-	 * @return a formatted string on the new state on change
+	 * Apply an action on the frame
+	 *
+	 * @param frame  frame to change
+	 * @param action action specified by the player
+	 * @param player player executing the comand
+	 * @return whether the item frame is changed
 	 */
-	protected abstract String fmtStatusChanged(@NotNull ItemFrame frame, boolean newState);
+	private boolean update(@NotNull ItemFrame frame, Action action, @NotNull Player player) {
+		/* Desired state */
+		boolean desired;
+		if (action == Action.TOGGLE) {
+			desired = !getter(frame);
+		} else {
+			/* Uniformly turning on or turning off */
+			desired = action == Action.ENABLE;
+			if (desired == getter(frame)) {
+				/* Early return when no change is needed */
+				return false;
+			}
+		}
+
+		setter(frame, desired, player);
+
+		final Particle.DustOptions options = new Particle.DustOptions(desired ? Color.GREEN : Color.RED, 1.0f);
+		Drawing.scheduleStickyDraw(this.plugin, () -> Drawing.drawBoundingBox(frame, options), 3, 10);
+		return true;
+	}
 
 	/**
-	 * Message when no change is needed (i,e, turning on the switch when the switch is already on)
+	 * Generate a summary on actions performed
 	 *
-	 * @param frame        frame checked
-	 * @param currentState current state
-	 * @return a formatted string when no change is needed
+	 * @param changeset frames changed
+	 * @param action    action requested by the user
+	 * @return a formatted string on the new state on change
 	 */
-	protected abstract String fmtNoChangeNeeded(@NotNull ItemFrame frame, boolean currentState);
+	protected abstract String fmtStatusChanged(@NotNull Collection<ItemFrame> changeset, Action action);
 
 	@Override
 	public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String argv0, @NotNull String[] argv1) {
@@ -86,37 +133,39 @@ public abstract class ToggleCommandExecutor implements CommandExecutor {
 			player.sendMessage(ChatColor.RED + e.getMessage());
 			return false;
 		}
-		// Check whether the player is looking at an item frame
-		ItemFrame frame = findFrameByTargetedEntity(player);
 
-		if (frame == null) {
-			// No item frames in range
-			player.sendMessage("Can't find an item frame where you are looking at");
-			return true;
+		List<ItemFrame> targets = new LinkedList<>();
+
+		if ((boolean) parsed.get("use-we")) {
+			/* TODO Call WorldEdit to fetch selection range */
+			return false;
+		} else {
+			/* Check whether the player is looking at an item frame */
+			ItemFrame frame = findFrameByTargetedEntity(player);
+			if (frame == null) {
+				player.sendMessage("Can't find an item frame where you are looking at");
+				return true;
+			}
+			targets.add(frame);
 		}
 
 		/* Verify action */
-		boolean toggle = false;
+		final Action action;
 		if ((boolean) parsed.get("on") && (boolean) parsed.get("off")) {
 			player.sendMessage(ChatColor.RED + "Must specify only one of --on or --off");
 			return false;
-		} else if (!((boolean) parsed.get("on") || (boolean) parsed.get("off"))) {
-			toggle = true;
+		} else if ((boolean) parsed.get("on")) {
+			action = Action.ENABLE;
+		} else if ((boolean) parsed.get("off")) {
+			action = Action.DISABLE;
+		} else {
+			action = Action.TOGGLE;
 		}
 
-		/* Whether the property should be enabled */
-		boolean enabling = toggle ? !getter(frame) : (boolean) parsed.get("on");
-		boolean changed = false;
+		List<ItemFrame> changed = targets.stream().filter(frame -> update(frame, action, player)).toList();
 
-		if (getter(frame) != enabling) {
-			setter(frame, enabling, player);
-			changed = true;
-		}
+		player.sendMessage(ChatColor.GREEN + fmtStatusChanged(changed, action));
 
-		final Particle.DustOptions options = new Particle.DustOptions(enabling ? Color.GREEN : Color.RED, 1.0f);
-		player.sendMessage(
-				ChatColor.GREEN + (changed ? fmtStatusChanged(frame, enabling) : fmtNoChangeNeeded(frame, enabling)));
-		Drawing.scheduleStickyDraw(this.plugin, () -> Drawing.drawBoundingBox(frame, options), 3, 10);
 		return true;
 	}
 }
