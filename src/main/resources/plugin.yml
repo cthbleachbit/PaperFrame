@@ -4,6 +4,8 @@ author: 'cth451'
 description: 'Commands to manipulate item frames'
 main: me.cth451.paperframe.PaperFramePlugin
 api-version: 1.18
+softdepend:
+  - WorldEdit
 commands:
   frameprotect:
     description: |

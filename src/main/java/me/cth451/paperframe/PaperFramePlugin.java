@@ -1,6 +1,7 @@
 package me.cth451.paperframe;
 
 import me.cth451.paperframe.command.*;
+import me.cth451.paperframe.dependency.WorldEditAPI;
 import me.cth451.paperframe.eventlistener.FrameProtectListener;
 import me.cth451.paperframe.task.*;
 import me.cth451.paperframe.util.HighlightOptions;
@@ -14,10 +15,13 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class PaperFramePlugin extends JavaPlugin {
 
-	// protect access to activeUpdateTask
+	/* protect access to activeUpdateTask */
 	private final ReentrantLock activeUpdateTaskLock = new ReentrantLock();
 	private int activeUpdateTask = -1;
 	public static final HashMap<UUID, HighlightOptions> activeHighlightUsers = new HashMap<>();
+
+	/* WorldEdit API, null if WE is not active */
+	public static WorldEditAPI WorldEdit = null;
 
 	private void registerCommands() {
 		Objects.requireNonNull(this.getCommand("frameprotect")).setExecutor(new FrameProtect(this));
@@ -71,6 +75,10 @@ public class PaperFramePlugin extends JavaPlugin {
 		this.registerCommands();
 		this.registerEventListeners();
 		this.saveDefaultConfig();
+		/* Check WorldEdit availability */
+		if (this.getServer().getPluginManager().getPlugin("WorldEdit") != null) {
+			WorldEdit = new WorldEditAPI(this);
+		}
 	}
 
 	@Override

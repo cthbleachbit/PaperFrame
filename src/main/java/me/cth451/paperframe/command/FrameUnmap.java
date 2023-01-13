@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-import static me.cth451.paperframe.util.Targeting.findStackedFrameByTargetedEntity;
+import static me.cth451.paperframe.util.Targeting.byTargetedStackedEntity;
 
 public class FrameUnmap implements CommandExecutor {
 	/**
@@ -31,7 +31,7 @@ public class FrameUnmap implements CommandExecutor {
 	 * @return number of item frames removed
 	 */
 	public static long removeFramesTargetedBlockFace(@NotNull Player player) {
-		List<ItemFrame> filtered = Targeting.findFrameByAttachedBlockFace(player);
+		List<ItemFrame> filtered = Targeting.byAttachedBlockFace(player);
 		filtered.forEach(Entity::remove);
 		return filtered.size();
 	}
@@ -43,7 +43,7 @@ public class FrameUnmap implements CommandExecutor {
 	 * @return number of item frames removed
 	 */
 	public static long removeFramesTargetedEntity(@NotNull Player player) {
-		List<ItemFrame> filtered = findStackedFrameByTargetedEntity(player);
+		List<ItemFrame> filtered = byTargetedStackedEntity(player);
 		filtered.forEach(Entity::remove);
 		return filtered.size();
 	}

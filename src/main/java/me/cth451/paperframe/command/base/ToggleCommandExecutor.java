@@ -2,6 +2,7 @@ package me.cth451.paperframe.command.base;
 
 import me.cth451.paperframe.PaperFramePlugin;
 import me.cth451.paperframe.util.Drawing;
+import me.cth451.paperframe.util.Targeting;
 import me.cth451.paperframe.util.getopt.ArgvParser;
 import me.cth451.paperframe.util.getopt.UnixFlagSpec;
 import org.bukkit.ChatColor;
@@ -16,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-import static me.cth451.paperframe.util.Targeting.findFrameByTargetedEntity;
+import static me.cth451.paperframe.util.Targeting.byTargetedEntity;
 
 /**
  * An abstract class defining a toggle switch on a frame property.
@@ -134,19 +135,26 @@ public abstract class ToggleCommandExecutor implements CommandExecutor {
 			return false;
 		}
 
-		List<ItemFrame> targets = new LinkedList<>();
+		List<ItemFrame> targets;
 
 		if ((boolean) parsed.get("use-we")) {
-			/* TODO Call WorldEdit to fetch selection range */
-			return false;
+			/* Call WorldEdit to fetch selection range */
+			targets = Targeting.byWorldEditCuboid(player);
+			if (targets == null) {
+				return true;
+			}
+			if (targets.isEmpty()) {
+				player.sendMessage("Can't find an item frame within selected cuboid");
+				return true;
+			}
 		} else {
 			/* Check whether the player is looking at an item frame */
-			ItemFrame frame = findFrameByTargetedEntity(player);
+			ItemFrame frame = byTargetedEntity(player);
 			if (frame == null) {
 				player.sendMessage("Can't find an item frame where you are looking at");
 				return true;
 			}
-			targets.add(frame);
+			targets = List.of(frame);
 		}
 
 		/* Verify action */

@@ -18,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-import static me.cth451.paperframe.util.Targeting.findStackedFrameByTargetedEntity;
+import static me.cth451.paperframe.util.Targeting.byTargetedStackedEntity;
 
 public class FrameStat implements CommandExecutor {
 	/**
@@ -109,7 +109,7 @@ public class FrameStat implements CommandExecutor {
 		}
 
 		/* Check whether the player is looking at an item frame */
-		List<ItemFrame> frameUnderCrossHair = findStackedFrameByTargetedEntity(player);
+		List<ItemFrame> frameUnderCrossHair = byTargetedStackedEntity(player);
 		StringBuilder messageBuilder = new StringBuilder();
 		final Particle.DustOptions options = new Particle.DustOptions(Color.GREEN, 1.0f);
 
