@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ArgvParserTest {
 	static HashSet<UnixFlagSpec> minemap = new HashSet<>();
-	;
+
 	static HashSet<UnixFlagSpec> numerical = new HashSet<>();
 
 	@BeforeAll
@@ -35,7 +35,6 @@ class ArgvParserTest {
 		String[] input = {"-d", "-i", "blah", "--game", "1.17"};
 		HashMap<String, Object> parsed = parser.parse(List.of(input));
 		// should get 2 EXIST type flag and 2 PARAMETRIZE type flag
-		assertEquals(parsed.size(), 4);
 		assertEquals(parsed.get("dithering"), true);
 		assertEquals(parsed.get("input"), "blah");
 		assertEquals(parsed.get("no-gz"), false);
@@ -50,7 +49,6 @@ class ArgvParserTest {
 		String[] input = {"-d", "-iblah", "-g1.17"};
 		HashMap<String, Object> parsed = parser.parse(List.of(input));
 		// should get 2 EXIST type flag and 2 PARAMETRIZE type flag
-		assertEquals(parsed.size(), 4);
 		assertEquals(parsed.get("dithering"), true);
 		assertEquals(parsed.get("input"), "blah");
 		assertEquals(parsed.get("no-gz"), false);
@@ -83,7 +81,6 @@ class ArgvParserTest {
 		HashMap<String, Object> parsed = parser.parse(List.of(input));
 		long endTime = System.nanoTime();
 		System.out.println("parseValidNumerical took " + (endTime - startTime) + "ns");
-		assertEquals(parsed.size(), 3);
 		assertEquals(parsed.get("string"), "str");
 		assertEquals(parsed.get("float"), 0.8347f);
 		assertEquals(parsed.get("integer"), 42);
@@ -150,7 +147,6 @@ class ArgvParserTest {
 		String[] input = {"-d", "-i", "blah\\", "blah blah", "-g1.17"};
 		HashMap<String, Object> parsed = parser.parse(List.of(input));
 		// should get 2 EXIST type flag and 2 PARAMETRIZE type flag
-		assertEquals(parsed.size(), 4);
 		assertEquals(parsed.get("dithering"), true);
 		assertEquals("blah blah blah", parsed.get("input"));
 		assertEquals(parsed.get("no-gz"), false);
@@ -197,8 +193,16 @@ class ArgvParserTest {
 		String[] input = {"-d", "-i", "blah\\", "blah blah", "-g1.17", "random shit1", "blahblah"};
 		List<String> strayArgs = new LinkedList<>();
 		HashMap<String, Object> parsed = parser.parse(List.of(input), strayArgs);
-		assertEquals(4, parsed.size());
 		assertEquals(2, strayArgs.size());
 		assertEquals("random shit1", strayArgs.get(0));
+	}
+
+
+	@Test
+	void helpFlagTest() {
+		ArgvParser parser = new ArgvParser(minemap, true);
+		String[] input = {"--help", "-i", "blah\\", "blah blah", "-g1.17", "random shit1", "blahblah"};
+		List<String> strayArgs = new LinkedList<>();
+		assertThrowsExactly(PrintHelpException.class, () -> parser.parse(List.of(input), strayArgs));
 	}
 }

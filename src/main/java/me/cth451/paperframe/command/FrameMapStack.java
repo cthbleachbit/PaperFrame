@@ -4,8 +4,10 @@ import com.destroystokyo.paper.block.TargetBlockInfo;
 import me.cth451.paperframe.PaperFramePlugin;
 import me.cth451.paperframe.util.Targeting;
 import me.cth451.paperframe.util.getopt.ArgvParser;
+import me.cth451.paperframe.util.getopt.PrintHelpException;
 import me.cth451.paperframe.util.getopt.UnixFlagSpec;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -73,7 +75,14 @@ public class FrameMapStack implements CommandExecutor {
 
 		HashMap<String, Object> parsed;
 		List<String> extraArgs = new LinkedList<>();
-		parsed = argvParser.parse(List.of(argv1p), extraArgs);
+		try {
+			parsed = argvParser.parse(List.of(argv1p), extraArgs);
+		} catch (PrintHelpException e) {
+			player.sendMessage(ChatColor.YELLOW + e.getMessage());
+			player.sendMessage(ChatColor.YELLOW + command.getDescription());
+			player.sendMessage(command.getUsage());
+			return true;
+		}
 
 		final boolean useGlow = (Boolean) parsed.get("glow");
 		final boolean append = (Boolean) parsed.get("append");

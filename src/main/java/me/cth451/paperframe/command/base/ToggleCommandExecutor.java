@@ -4,6 +4,7 @@ import me.cth451.paperframe.PaperFramePlugin;
 import me.cth451.paperframe.util.Drawing;
 import me.cth451.paperframe.util.Targeting;
 import me.cth451.paperframe.util.getopt.ArgvParser;
+import me.cth451.paperframe.util.getopt.PrintHelpException;
 import me.cth451.paperframe.util.getopt.UnixFlagSpec;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
@@ -46,7 +47,7 @@ public abstract class ToggleCommandExecutor implements CommandExecutor {
 	protected enum Action {
 		TOGGLE,
 		ENABLE,
-		DISABLE;
+		DISABLE,
 	}
 
 	/**
@@ -130,9 +131,11 @@ public abstract class ToggleCommandExecutor implements CommandExecutor {
 		HashMap<String, Object> parsed;
 		try {
 			parsed = argvParser.parse(List.of(argv1));
-		} catch (IllegalArgumentException e) {
-			player.sendMessage(ChatColor.RED + e.getMessage());
-			return false;
+		} catch (IllegalArgumentException | PrintHelpException e) {
+			player.sendMessage(ChatColor.YELLOW + e.getMessage());
+			player.sendMessage(ChatColor.YELLOW + command.getDescription());
+			player.sendMessage(command.getUsage());
+			return true;
 		}
 
 		List<ItemFrame> targets;

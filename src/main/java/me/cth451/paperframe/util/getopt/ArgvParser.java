@@ -4,17 +4,14 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.function.BiConsumer;
 
 /**
  * A GNU getopt style argument parser (reduced functionality - no positional arguments)
  */
 public class ArgvParser {
-	private final Collection<UnixFlagSpec> arguments;
+	private final Collection<UnixFlagSpec> arguments = new ArrayList<>();
 	private final HashMap<String, UnixFlagSpec> longLookupTable = new HashMap<>();
 	private final HashMap<Character, UnixFlagSpec> shortLookupTable = new HashMap<>();
 
@@ -33,19 +30,25 @@ public class ArgvParser {
 	@Contract(mutates = "this")
 	private void verify() throws IllegalArgumentException {
 		// Populate lookup structure and count distinct long options
-		arguments.forEach((arg) -> longLookupTable.put(arg.longArg(), arg));
-		if (longLookupTable.size() != arguments.size()) {
+		long flagsWithLongArgs =
+				arguments.stream()
+				         .filter((arg) -> arg.longArg() != null && !arg.longArg().isEmpty())
+				         .count();
+		arguments.stream()
+		         .filter((arg) -> arg.longArg() != null && !arg.longArg().isEmpty())
+		         .forEach((arg) -> longLookupTable.put(arg.longArg(), arg));
+		if (longLookupTable.size() != flagsWithLongArgs) {
 			throw new IllegalArgumentException("Duplicated long argument names detected");
 		}
 
 		// count flags that has a shorthand defined
 		long flagsWithShorthands =
 				arguments.stream()
-				         .filter((arg) -> arg.shortArg() > 0)
+				         .filter((arg) -> arg.shortArg() != null && arg.shortArg() > 0)
 				         .count();
 		// Populate lookup structure and count distinct short options
 		arguments.stream()
-		         .filter((arg) -> arg.shortArg() > 0)
+		         .filter((arg) -> arg.shortArg() != null && arg.shortArg() > 0)
 		         .forEach((arg) -> shortLookupTable.put(arg.shortArg(), arg));
 		if (flagsWithShorthands != shortLookupTable.size()) {
 			throw new IllegalArgumentException("Duplicated shorthands detected");
@@ -68,26 +71,24 @@ public class ArgvParser {
 	 * @throws IllegalArgumentException when flags are inconsistent
 	 */
 	public ArgvParser(Collection<UnixFlagSpec> arguments) throws IllegalArgumentException {
-		this.arguments = arguments;
-		verify();
+		this(arguments, true);
 	}
 
 	/**
-	 * Parse given list of argv1 and on into key-value pairs.
-	 * <p>
-	 * If the type of {@link UnixFlagSpec} is EXIST, the resulting destination variable will contain True/False.
-	 * <p>
-	 * If the type of {@link UnixFlagSpec} is PARAMETRIZE, the destination variable may
-	 * <ul>
-	 *     <li>either do not exist in the mapping,</li>
-	 *     <li>be found in the mapping by the destination name after applying {@link UnixFlagSpec#transform()}.</li>
-	 * </ul>
-	 * This method does not modify internal states and should be safe to call concurrently.
+	 * Construct an argument parser based on the flag list provided
 	 *
-	 * @param argv1pWithBackslash ordered list of arguments from argv[1] and on
-	 * @return mapping of parsed arguments and parameters
-	 * @throws IllegalArgumentException if the input string array contains unrecognized options
+	 * @param arguments flag specification
+	 * @throws IllegalArgumentException when flags are inconsistent
 	 */
+	public ArgvParser(Collection<UnixFlagSpec> arguments, boolean includeHelp) throws IllegalArgumentException {
+		this.arguments.addAll(arguments);
+		if (includeHelp) {
+			this.arguments.add(new UnixFlagSpec("help", null, UnixFlagSpec.FlagType.EXIST, "help"));
+		}
+		verify();
+	}
+
+
 	@Contract(pure = true)
 	public HashMap<String, Object> parse(@NotNull List<String> argv1pWithBackslash) throws IllegalArgumentException {
 		return parse(argv1pWithBackslash, null);
@@ -103,13 +104,17 @@ public class ArgvParser {
 	 *     <li>either do not exist in the mapping,</li>
 	 *     <li>be found in the mapping by the destination name after applying {@link UnixFlagSpec#transform()}.</li>
 	 * </ul>
+	 * If ArgvParser was constructed with includeHelp set to true, parsing will end upon encountering "-h" and a
+	 * {@link PrintHelpException} will be raised.
+	 * <p>
 	 * This method does not modify internal states and should be safe to call concurrently.
 	 *
 	 * @param argv1pWithBackslash ordered list of arguments from argv[1] and on
-	 * @param extraTokens         if set to nonnull, parsing will stop upon encountering an unknown token. The remaining
-	 *                            tokens are written here. If this is set to null, then unrecognized parameters will
-	 *                            cause IllegalArgumentException.
+	 * @param extraTokens         If provided, parsing will stop upon encountering an unknown token. All remaining
+	 *                            unparsed tokens are backslash-unescaped and written here.
+	 *                            If this is set to null, any unrecognized flags will cause IllegalArgumentException.
 	 * @return mapping of parsed arguments and parameters
+	 * @throws PrintHelpException if includeHelp was specified in constructor and "-h" was passed by user.
 	 * @throws IllegalArgumentException if the input string array contains unrecognized options and extraTokens is
 	 *                                  null.
 	 */
@@ -223,6 +228,10 @@ public class ArgvParser {
 					break;
 				}
 			}
+		}
+
+		if ((boolean) ret.get("help")) {
+			throw new PrintHelpException();
 		}
 
 		return ret;

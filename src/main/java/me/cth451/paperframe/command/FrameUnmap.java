@@ -3,6 +3,7 @@ package me.cth451.paperframe.command;
 import me.cth451.paperframe.PaperFramePlugin;
 import me.cth451.paperframe.util.Targeting;
 import me.cth451.paperframe.util.getopt.ArgvParser;
+import me.cth451.paperframe.util.getopt.PrintHelpException;
 import me.cth451.paperframe.util.getopt.UnixFlagSpec;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -62,7 +63,10 @@ public class FrameUnmap implements CommandExecutor {
 	}
 
 	@Override
-	public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String argv0, @NotNull String[] argv1p) {
+	public boolean onCommand(@NotNull CommandSender sender,
+	                         @NotNull Command command,
+	                         @NotNull String argv0,
+	                         @NotNull String[] argv1p) {
 		if (!(sender instanceof Player player)) {
 			sender.sendMessage("This command can only be used by a player");
 			return false;
@@ -71,9 +75,11 @@ public class FrameUnmap implements CommandExecutor {
 		HashMap<String, Object> parsed;
 		try {
 			parsed = argvParser.parse(List.of(argv1p));
-		} catch (IllegalArgumentException e) {
-			player.sendMessage(ChatColor.RED + e.getMessage());
-			return false;
+		} catch (IllegalArgumentException | PrintHelpException e) {
+			player.sendMessage(ChatColor.YELLOW + e.getMessage());
+			player.sendMessage(ChatColor.YELLOW + command.getDescription());
+			player.sendMessage(command.getUsage());
+			return true;
 		}
 
 		long removed = 0;

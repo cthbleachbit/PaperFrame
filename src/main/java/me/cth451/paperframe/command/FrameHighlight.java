@@ -4,6 +4,7 @@ import me.cth451.paperframe.PaperFramePlugin;
 import me.cth451.paperframe.util.FrameFilter;
 import me.cth451.paperframe.util.HighlightOptions;
 import me.cth451.paperframe.util.getopt.ArgvParser;
+import me.cth451.paperframe.util.getopt.PrintHelpException;
 import me.cth451.paperframe.util.getopt.UnixFlagSpec;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -74,9 +75,11 @@ public class FrameHighlight implements CommandExecutor {
 		HashMap<String, Object> parsed;
 		try {
 			parsed = argvParser.parse(List.of(argv1));
-		} catch (IllegalArgumentException e) {
-			player.sendMessage(ChatColor.RED + e.getMessage());
-			return false;
+		} catch (IllegalArgumentException | PrintHelpException e) {
+			player.sendMessage(ChatColor.YELLOW + e.getMessage());
+			player.sendMessage(ChatColor.YELLOW + command.getDescription());
+			player.sendMessage(command.getUsage());
+			return true;
 		}
 
 		if (parsed.containsKey("radius")) {
