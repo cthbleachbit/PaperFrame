@@ -12,6 +12,8 @@ commands:
       Protect / un-protect the item frame you are looking at
       --on, -1 = turn on protection
       --off, -0 = turn off protection
+      Neither = toggle
+      
       -w = operate within WorldEdit selected cuboid instead of the frame under cursor
     usage: "/frameprotect <--on|--off> <-w>"
     permission: "paperframe.protect"
@@ -32,8 +34,14 @@ commands:
     aliases:
       - fh
   frameshowhide:
-    description: "Toggle invisible status of the frame you are looking at"
-    usage: "/frameshowhide"
+    description: |
+      Toggle invisible status of the frame you are looking at
+      --on, -1 = make invisible
+      --off, -0 = make visible
+      Neither = toggle
+
+      -w = operate within WorldEdit selected cuboid instead of the frame under cursor
+    usage: "/frameshowhide <--on|--off> <-w>"
     permission: "paperframe.showhide"
     aliases:
       - fsh
@@ -60,8 +68,9 @@ commands:
       - fmaps
   frameunmap:
     description: |
-      Destroy all item frames on the block face under your cursor.
-    usage: "/frameunmap"
+      Destroy all item frames on the block face under your cursor
+      -w = operate within WorldEdit selected cuboid instead of the frame under cursor
+    usage: "/frameunmap <-w>"
     permission: "paperframe.mapstack"
     aliases:
       - funmap

@@ -19,8 +19,14 @@ public class ArgvParser {
 	private final HashMap<Character, UnixFlagSpec> shortLookupTable = new HashMap<>();
 
 	/**
-	 * Verify whether the arguments make sense: - check for conflicting long options - check for conflicting short hands
-	 * - check for conflicting destination variable name This method only need to execute once during construction.
+	 * Verify whether the arguments make sense:
+	 * <ul>
+	 *     <li>check for conflicting long options</li>
+	 *     <li>check for conflicting short hands</li>
+	 *     <li>check for conflicting destination variable names</li>
+	 * </ul>
+	 * <p>
+	 * This method only need to execute once during construction.
 	 *
 	 * @throws IllegalArgumentException if the argv specification violates the rules above
 	 */
