@@ -82,8 +82,10 @@ commands:
       Place tiles one by one onto a flat rectangle of frames with top-left corner under cursor. All frames must already exist.
       Existing items in the frames will be deleted and replaced. All map ids will be validated prior to execution.
     usage: |
-      /frame2d -w width -h height id [id:id id+offset ...]
-      -w and -h defaults to 1 when omitted.
+      /frame2d {-n name | -w W -h H ids ...}
+        -n retrieve tile set information from a tile set metadata server.
+      Alternatively use the following parameters:
+        -w W, -h N specify width and height respectively.
       
       Map IDs can be specified in the following ways:
       - "X" This exact map with ID exactly equal to X;
@@ -120,5 +122,5 @@ permissions:
     description: "Allow use of /framestat and /fstat"
     default: true
   paperframe.mapstack:
-    description: "Allow use of /framemaps, /fmaps, /frameunmap, /funmap and /ftiling"
+    description: "Allow use of /framemaps, /fmaps, /frameunmap, /funmap and /f2d"
     default: op

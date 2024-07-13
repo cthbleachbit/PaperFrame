@@ -6,6 +6,7 @@ import me.cth451.paperframe.eventlistener.FrameProtectListener;
 import me.cth451.paperframe.task.FrameHighlightTask;
 import me.cth451.paperframe.util.HighlightOptions;
 import me.cth451.paperframe.util.Targeting;
+import me.cth451.paperframe.util.tileviewer.TileSetViewerClient;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -23,6 +24,9 @@ public class PaperFramePlugin extends JavaPlugin {
 
 	/* Dependency manager */
 	private DependencyManager dependencyManager = null;
+
+	/* API Client to tile set viewer */
+	private TileSetViewerClient viewerClient = null;
 
 	private void registerCommands() {
 		Objects.requireNonNull(this.getCommand("frameprotect")).setExecutor(new FrameProtect(this));
@@ -76,12 +80,17 @@ public class PaperFramePlugin extends JavaPlugin {
 		return this.dependencyManager;
 	}
 
+	public TileSetViewerClient getTileSetViewerClient() {
+		return this.viewerClient;
+	}
+
 	@Override
 	public void onEnable() {
 		this.registerCommands();
 		this.registerEventListeners();
 		this.saveDefaultConfig();
 		this.dependencyManager = new DependencyManager(this);
+		this.viewerClient = new TileSetViewerClient(this);
 
 		HighlightOptions.plugin = this;
 		Targeting.plugin = this;

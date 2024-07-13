@@ -2,3 +2,6 @@ commands:
   framehighlight:
     max_radius: 10
     default_radius: 5
+util:
+  tileviewer:
+    endpoint_base: ""

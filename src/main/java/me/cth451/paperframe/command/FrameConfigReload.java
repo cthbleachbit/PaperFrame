@@ -22,6 +22,7 @@ public class FrameConfigReload implements CommandExecutor {
 		commandSender.sendMessage("Config Reloaded!");
 		commandSender.sendMessage(String.format("commands.framehighlight.max_radius: %f", this.plugin.getConfig().getDouble("commands.framehighlight.max_radius")));
 		commandSender.sendMessage(String.format("commands.framehighlight.default_radius: %f", this.plugin.getConfig().getDouble("commands.framehighlight.default_radius")));
+		commandSender.sendMessage(String.format("util.tileviewer.endpoint_base: %s", this.plugin.getConfig().getString("util.tileviewer.endpoint_base", "")));
 		return true;
 	}
 }
