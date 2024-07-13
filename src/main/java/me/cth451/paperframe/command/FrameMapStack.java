@@ -30,12 +30,14 @@ import java.util.List;
 import static me.cth451.paperframe.command.FrameUnmap.removeFramesTargetedBlockFace;
 
 /**
- * framemaps [-g] [-a] id1 id2 id3....
+ * framemaps [-ghpa] id1 id2 id3....
  * <p>
  * Spawn multiple item frames to contain maps of specified ids. Note that this will delete any item frames that already
- * occupy that block surface if [-a] is not specified. Generated frames will be hidden and protected by default.
+ * occupy that block surface if [-a] is not specified. Generated frames will be protected by default.
  * <ul>
  *     <li>-g = glow item frame</li>
+ *     <li>-h = new frames should be hidden</li>
+ *     <li>-p = new frames should be protected</li>
  *     <li>-a = append</li>
  * </ul>
  */
@@ -56,6 +58,8 @@ public class FrameMapStack implements CommandExecutor {
 
 	private final static UnixFlagSpec[] arguments = {
 			new UnixFlagSpec("glow", 'g', UnixFlagSpec.FlagType.EXIST, "glow"),
+			new UnixFlagSpec("hidden", 'h', UnixFlagSpec.FlagType.EXIST, "hidden"),
+			new UnixFlagSpec("protected", 'p', UnixFlagSpec.FlagType.EXIST, "protected"),
 			new UnixFlagSpec("append", 'a', UnixFlagSpec.FlagType.EXIST, "append"),
 	};
 
@@ -131,8 +135,8 @@ public class FrameMapStack implements CommandExecutor {
 					   content.setItemMeta(meta);
 					   f.setItem(content);
 					   f.setFacingDirection(extruding, true);
-					   FrameProtect.setProtectedByPlayer(f, true, player);
-					   FrameShowHide.setShowHideByPlayer(f, true, player);
+					   FrameProtect.setProtectedByPlayer(f, (Boolean) parsed.get("hidden"), player);
+					   FrameShowHide.setShowHideByPlayer(f, (Boolean) parsed.get("protected"), player);
 					   return true;
 				   })
 				   .count();
