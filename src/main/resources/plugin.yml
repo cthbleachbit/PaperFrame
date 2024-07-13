@@ -90,8 +90,8 @@ commands:
       Map IDs can be specified in the following ways:
       - "X" This exact map with ID exactly equal to X;
       - "X:Y" Maps between X and Y inclusive in that order;
-      - "X+N" X and upwards to X+N (inclusive);
-      - "X+-N" X+N and downwards to X (inclusive).
+      - "X+N" X and count upwards to X+N (inclusive);
+      - "X+-N" X+N and count downwards to X (inclusive).
     permission: "paperframe.frametiling"
     aliases:
       - f2d
