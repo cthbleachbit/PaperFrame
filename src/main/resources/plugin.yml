@@ -10,7 +10,7 @@ commands:
   frameprotect:
     description: Protect / un-protect the item frame you are looking at.
     usage: |
-      /frameprotect <--on|--off> <-w>
+      /frameprotect [--on|--off] [-w]
       --on, -1 = turn on protection
       --off, -0 = turn off protection
       Neither = toggle
@@ -22,7 +22,7 @@ commands:
   framehighlight:
     description: Toggle highlight status of item frames near you. Multiple filters maybe stacked together.
     usage: |
-      /framehighlight <-hpse> [-r radius|-w]
+      /framehighlight [-hpse] [-r radius | -w]
       -h = hidden ones only
       -p = protected ones only
       -s = overlapping / stacked ones only
@@ -36,7 +36,7 @@ commands:
     description: |
       Toggle invisible status of the frame you are looking at
     usage: |
-      /frameshowhide <--on|--off> <-w>
+      /frameshowhide [--on|--off] [-w]
       --on, -1 = make invisible
       --off, -0 = make visible
       Neither = toggle
@@ -60,8 +60,10 @@ commands:
     description: |
       Spawn protected hidden item frames containing specific maps on the block face under cross hair.
     usage: |
-      /framemaps <-ga> id1 id2 ....
-      -g = spawn with glowing item frames
+      /framemaps [-ghpa] id1 id2 ....
+      -g = new frames should be glowing
+      -h = new frames should be hidden
+      -p = new frames should be protected
       -a = append only, otherwise existing frames in the occupying space will be removed
     permission: "paperframe.mapstack"
     aliases:
@@ -70,19 +72,27 @@ commands:
     description: |
       Destroy all item frames on the block face under your cursor
     usage: |
-      /frameunmap <-w>
+      /frameunmap [-w]
       -w = operate within WorldEdit selected cuboid instead of the frame under cursor
     permission: "paperframe.mapstack"
     aliases:
       - funmap
-  frametiling:
+  frame2d:
     description: |
-      Place tiles one by one onto a consecutive area of item frames on the same surface under cross hair.
-      Existing items in the frames will be deleted and replaced.
-    usage: "/frametiling map_id1 map_id id_start-id_end ..."
+      Place tiles one by one onto a flat rectangle of frames with top-left corner under cursor. All frames must already exist.
+      Existing items in the frames will be deleted and replaced. All map ids will be validated prior to execution.
+    usage: |
+      /frame2d -w width -h height id [id:id id+offset ...]
+      -w and -h defaults to 1 when omitted.
+      
+      Map IDs can be specified in the following ways:
+      - "X" This exact map with ID exactly equal to X;
+      - "X:Y" Maps between X and Y inclusive in that order;
+      - "X+N" X and upwards to X+N (inclusive);
+      - "X+-N" X+N and downwards to X (inclusive).
     permission: "paperframe.frametiling"
     aliases:
-      - funmap
+      - f2d
 permissions:
   paperframe.*:
     description: "Gives access to all PaperFrame commands"

@@ -32,6 +32,7 @@ public class PaperFramePlugin extends JavaPlugin {
 		Objects.requireNonNull(this.getCommand("framestat")).setExecutor(new FrameStat(this));
 		Objects.requireNonNull(this.getCommand("framemaps")).setExecutor(new FrameMapStack(this));
 		Objects.requireNonNull(this.getCommand("frameunmap")).setExecutor(new FrameUnmap(this));
+		Objects.requireNonNull(this.getCommand("frame2d")).setExecutor(new Frame2d(this));
 	}
 
 	private void registerEventListeners() {

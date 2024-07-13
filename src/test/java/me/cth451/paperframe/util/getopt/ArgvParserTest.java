@@ -87,6 +87,22 @@ class ArgvParserTest {
 	}
 
 	@Test
+	void parseValidExtraArgsTest() {
+		ArgvParser parser = new ArgvParser(numerical);
+		String[] input = {"--string", "str", "--float", "0.8347", "--integer", "42", "blahblah", "blehbleh"};
+		long startTime = System.nanoTime();
+		LinkedList<String> extraArgs = new LinkedList<>();
+
+		HashMap<String, Object> parsed = parser.parse(List.of(input), extraArgs);
+		long endTime = System.nanoTime();
+
+		System.out.println("parseValidExtraArgs took " + (endTime - startTime) + "ns");
+		assertEquals(parsed.get("string"), "str");
+		assertEquals(parsed.get("float"), 0.8347f);
+		assertEquals(parsed.get("integer"), 42);
+	}
+
+	@Test
 	void parseMalformedNumericalTest() {
 		ArgvParser parser = new ArgvParser(numerical);
 		String[] input = {"--string", "str", "--float", "0.83ddd47", "--integer", "42"};

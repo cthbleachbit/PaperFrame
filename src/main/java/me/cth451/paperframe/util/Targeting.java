@@ -2,7 +2,8 @@ package me.cth451.paperframe.util;
 
 import com.destroystokyo.paper.block.TargetBlockInfo;
 import me.cth451.paperframe.PaperFramePlugin;
-import org.bukkit.ChatColor;
+import me.cth451.paperframe.util.exceptions.InvalidFrameCountException;
+import me.cth451.paperframe.util.exceptions.InvalidFrameCountExceptionBuilder;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -13,6 +14,8 @@ import org.bukkit.util.BoundingBox;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 public class Targeting {
@@ -117,7 +120,7 @@ public class Targeting {
 	 * @param block the block to check
 	 * @param face  the face to check
 	 * @return a list of item frames attached to the specific block on the specific face. The returned list is
-	 * 		unmodifiable.
+	 * unmodifiable.
 	 */
 	public static List<ItemFrame> byAttachedBlockFace(@NotNull Block block, @NotNull BlockFace face) {
 		final Block containingBlock = block.getRelative(face);
@@ -137,7 +140,7 @@ public class Targeting {
 	 *
 	 * @param player requesting player
 	 * @return the list of item frames within WorldEdit selection range (maybe empty), or null if and only WE is not
-	 * 		active.
+	 * active.
 	 */
 	public static List<ItemFrame> byWorldEditCuboid(@NotNull Player player) {
 		if (!plugin.getDependencyManager().isWorldEditAvailable(null)) {
@@ -145,5 +148,86 @@ public class Targeting {
 		} else {
 			return plugin.getDependencyManager().getCuboidSelection(player, true);
 		}
+	}
+
+	/**
+	 * Selects a rectangle of frames with top-left corner under cursor. All frames must already exist.
+	 * <p>
+	 * Multiple frames on the same face will cause an error.
+	 *
+	 * @param topLeftBackingBlock targeted block
+	 * @param face                targeted face
+	 * @param width               proposed width
+	 * @param height              proposed height
+	 * @return list of item frames
+	 * @throws InvalidFrameCountException if specified rectangle cannot be satisfied
+	 */
+	public static List<ItemFrame> byRectangleTopLeftCorner(@NotNull Block topLeftBackingBlock,
+	                                                       @NotNull BlockFace face,
+	                                                       int width,
+	                                                       int height) throws InvalidFrameCountException {
+		enum PlanarVec {
+			UP,
+			DOWN,
+			LEFT,
+			RIGHT;
+
+			/**
+			 * @param face The topLeftBackingBlock face facing the player
+			 * @param direction Planar direction to translate
+			 * @return cartesian topLeftBackingBlock face that appears to be "direction" from a viewer facing "face"
+			 */
+			static @NotNull BlockFace translate(@NotNull BlockFace face, PlanarVec direction) {
+				if (face == BlockFace.UP || face == BlockFace.DOWN) {
+					throw new IllegalArgumentException("UP/DOWN faces are not supported (yet)");
+				}
+
+				if (direction == UP || direction == DOWN) {
+					return direction == UP ? BlockFace.UP : BlockFace.DOWN;
+				} else if (direction == LEFT) {
+					return switch (face) {
+						case NORTH -> BlockFace.EAST;
+						case EAST -> BlockFace.SOUTH;
+						case SOUTH -> BlockFace.WEST;
+						case WEST -> BlockFace.NORTH;
+						default -> throw new IllegalArgumentException("Unexpected value: " + face);
+					};
+				} else {
+					return switch (face) {
+						case NORTH -> BlockFace.WEST;
+						case EAST -> BlockFace.NORTH;
+						case SOUTH -> BlockFace.EAST;
+						case WEST -> BlockFace.SOUTH;
+						default -> throw new IllegalArgumentException("Unexpected value: " + face);
+					};
+				}
+			}
+		}
+
+		/* Determine bounds in the 4 planar direction */
+		if (face == BlockFace.UP || face == BlockFace.DOWN) {
+			throw new IllegalArgumentException("UP/DOWN faces are not supported (yet)");
+		}
+
+		/* Now figure out top left corner and lay things out in order */
+		InvalidFrameCountExceptionBuilder builder = new InvalidFrameCountExceptionBuilder();
+		List<ItemFrame> targets = new LinkedList<>();
+		for (int row = 0; row < height; row++) {
+			for (int col = 0; col < width; col++) {
+				Block local_block = topLeftBackingBlock
+						.getRelative(PlanarVec.translate(face, PlanarVec.RIGHT), col)
+						.getRelative(PlanarVec.translate(face, PlanarVec.DOWN), row);
+				List<ItemFrame> local_frames = byAttachedBlockFace(local_block, face);
+				if (local_frames.size() != 1) {
+					builder.addBadFace(local_block, face, local_frames.size());
+				} else {
+					targets.addAll(local_frames);
+				}
+			}
+		}
+
+		builder.verifyOrThrow();
+
+		return targets;
 	}
 }
