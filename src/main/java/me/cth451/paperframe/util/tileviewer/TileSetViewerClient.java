@@ -110,10 +110,22 @@ public class TileSetViewerClient {
 			}
 			try {
 				getMetadata(groupPath);
-			} catch (RuntimeException e) {
-				plugin.getComponentLogger().trace("Error downloading group meta", e);
+			} catch (IllegalStateException e) {
+				plugin.getComponentLogger().error("API is not ready", e);
 				Bukkit.getScheduler()
 				      .scheduleSyncDelayedTask(plugin, () -> notifyCallback.accept(false, e.getMessage()));
+				return;
+			} catch (IOException e) {
+				plugin.getComponentLogger().error("Network Error", e);
+				Bukkit.getScheduler()
+				      .scheduleSyncDelayedTask(plugin, () -> notifyCallback.accept(false, e.getMessage()));
+				return;
+			} catch (RuntimeException e) {
+				plugin.getComponentLogger().error("Internal Error", e);
+				Bukkit.getScheduler()
+				      .scheduleSyncDelayedTask(plugin,
+				                               () -> notifyCallback.accept(false,
+				                                                           "Internal error occurred - please check server logs"));
 				return;
 			}
 			String message = String.format("Metadata for tileset %s downloaded. Please try again.", groupPath);
@@ -122,7 +134,7 @@ public class TileSetViewerClient {
 		}).start();
 	}
 
-	public GroupMetadata getMetadata(@NotNull String groupPath) {
+	public GroupMetadata getMetadata(@NotNull String groupPath) throws MalformedURLException, IOException {
 		if (getEndpointBase() == null) {
 			throw new IllegalStateException(uninitializedError);
 		}
@@ -137,25 +149,23 @@ public class TileSetViewerClient {
 			return metadata;
 		}
 
-		URL url;
-		try {
-			url = new URL(getEndpointBase() + "/group/" + normalizedPath);
-		} catch (MalformedURLException e) {
-			throw new RuntimeException(e);
-		}
+		/* May throw MalformedURLException */
+		URL url = new URL(getEndpointBase() + "/group/" + normalizedPath);
 
-		String response;
-		try {
-			HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-			connection.setRequestMethod("GET");
-			connection.setDoInput(true);
-			connection.connect();
-			InputStream inputStream = connection.getInputStream();
-			response = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-			connection.disconnect();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+		/* May throw IOException */
+		HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+		connection.setRequestMethod("GET");
+		connection.setDoInput(true);
+		connection.connect();
+		if (connection.getResponseCode() != 200) {
+			throw new IOException(String.format("Could not retrieve metadata for %s: %d %s",
+			                                    normalizedPath,
+			                                    connection.getResponseCode(),
+			                                    connection.getResponseMessage()));
 		}
+		InputStream inputStream = connection.getInputStream();
+		String response = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+		connection.disconnect();
 
 		metadata = GroupMetadata.fromJson(response);
 
