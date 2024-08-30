@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.net.ssl.SSLContext;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -16,18 +17,17 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 
 public class TileSetViewerClient {
 	private static final String uninitializedError = "API endpoint base URL is not set in plugin config.";
+	private static final String initFailedError = "Client unavailable as initialization was unsuccessful.";
 	/* Local Fields */
 	private PaperFramePlugin plugin = null;
 	private boolean borked = true;
-	private final ReentrantLock cacheLock = new ReentrantLock();
-	private final HashMap<String, GroupMetadata> localMetadataCache = new HashMap<>();
-	private final HashMap<String, Instant> localMetadataMtime = new HashMap<>();
+	private final ConcurrentHashMap<String, GroupMetadata> metadataCache = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, DirectoryListing> listingCache = new ConcurrentHashMap<>();
 
 	/**
 	 * Client constructor - mostly sets up SSL
@@ -77,33 +77,31 @@ public class TileSetViewerClient {
 	 * @param groupPath tile set path
 	 * @return group meta if locally cached and valid
 	 */
-	public GroupMetadata checkCache(@NotNull String groupPath) {
+	public GroupMetadata checkMetadataCache(@NotNull String groupPath) {
 		if (getEndpointBase() == null) {
 			throw new IllegalStateException(uninitializedError);
 		}
 
 		String normalizedPath = normalizePath(groupPath);
-		cacheLock.lock();
-		GroupMetadata metadata = localMetadataCache.getOrDefault(normalizedPath, null);
-		Instant mtime = localMetadataMtime.getOrDefault(normalizedPath, Instant.ofEpochMilli(0));
-		cacheLock.unlock();
+		GroupMetadata metadata = metadataCache.getOrDefault(normalizedPath, null);
 
-		if (mtime.isBefore(Instant.now().minus(Duration.ofDays(1)))) {
+		if (metadata == null || metadata.created.isBefore(Instant.now().minus(Duration.ofDays(1)))) {
 			return null;
 		}
 		return metadata;
 	}
 
 	/**
-	 * Schedule a background refresh of specified tileset
+	 * Schedule a background refresh of specified tileset. Note that network operation is intentionally forked
+	 * to background as minecraft command execution is synchronous.
 	 *
 	 * @param plugin         reference to local plugin
 	 * @param groupPath      tileset path
 	 * @param notifyCallback notification callback - boolean = success or not, String = message
 	 */
-	public void scheduleBackgroundFetch(@NotNull PaperFramePlugin plugin,
-	                                    @NotNull String groupPath,
-	                                    final BiConsumer<Boolean, String> notifyCallback) {
+	public void scheduleMetadataFetch(@NotNull PaperFramePlugin plugin,
+	                                  @NotNull String groupPath,
+	                                  final BiConsumer<Boolean, String> notifyCallback) {
 		new Thread(() -> {
 			if (getEndpointBase() == null) {
 				plugin.getComponentLogger().error(uninitializedError);
@@ -114,6 +112,10 @@ public class TileSetViewerClient {
 				getMetadata(groupPath);
 			} catch (IllegalStateException e) {
 				plugin.getComponentLogger().error("API is not ready", e);
+				Bukkit.getScheduler()
+				      .scheduleSyncDelayedTask(plugin, () -> notifyCallback.accept(false, e.getMessage()));
+				return;
+			} catch (FileNotFoundException e) {
 				Bukkit.getScheduler()
 				      .scheduleSyncDelayedTask(plugin, () -> notifyCallback.accept(false, e.getMessage()));
 				return;
@@ -136,13 +138,21 @@ public class TileSetViewerClient {
 		}).start();
 	}
 
-	public void getMetadata(@NotNull String groupPath) throws IOException {
+	/**
+	 * Call /api/v1/group/[path] - result will be returned stored in cache
+	 *
+	 * @param groupPath path prefix
+	 * @return group metadata
+	 * @throws IOException           for network errors
+	 * @throws FileNotFoundException for a 404 response
+	 */
+	public GroupMetadata getMetadata(@NotNull String groupPath) throws IOException {
 		if (getEndpointBase() == null) {
 			throw new IllegalStateException(uninitializedError);
 		}
 
 		if (borked) {
-			throw new IllegalStateException("Client initialization was unsuccessful");
+			throw new IllegalStateException(initFailedError);
 		}
 
 		String normalizedPath = normalizePath(groupPath);
@@ -153,23 +163,28 @@ public class TileSetViewerClient {
 		/* May throw IOException */
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 		connection.setRequestMethod("GET");
-		/* No need to refresh if everything is still update to date */
-		this.cacheLock.lock();
-		connection.setIfModifiedSince(localMetadataMtime.getOrDefault(normalizedPath, Instant.ofEpochMilli(0))
-		                                                .toEpochMilli());
-		this.cacheLock.unlock();
+
+		/* Inform server of local timestamps */
+		GroupMetadata metadata = metadataCache.getOrDefault(normalizedPath, null);
+
+		if (metadata != null) {
+			connection.setIfModifiedSince(metadata.created.toEpochMilli());
+		}
+
 		connection.setDoInput(true);
 		connection.connect();
 
 		if (connection.getResponseCode() == 314) {
-			/* No need to set update time. Update local records only. */
-			this.cacheLock.lock();
-			this.localMetadataMtime.put(normalizedPath, Instant.now());
-			this.cacheLock.unlock();
+			/* No need to update information - content up to date */
+			assert metadata != null;
+			metadata.created = Instant.now();
 			connection.disconnect();
-			return;
-		}
-		if (connection.getResponseCode() != 200) {
+			return metadata;
+		} else if (connection.getResponseCode() == 404) {
+			metadataCache.remove(normalizedPath);
+			throw new FileNotFoundException(String.format("Tile set %s does not exist in the database!",
+			                                              normalizedPath));
+		} else if (connection.getResponseCode() != 200) {
 			throw new IOException(String.format("Could not retrieve metadata for %s: %d %s",
 			                                    normalizedPath,
 			                                    connection.getResponseCode(),
@@ -179,33 +194,45 @@ public class TileSetViewerClient {
 		String response = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
 		connection.disconnect();
 
-		GroupMetadata metadata = GroupMetadata.fromJson(response);
-
-		this.cacheLock.lock();
-		localMetadataCache.put(normalizedPath, metadata);
-		localMetadataMtime.put(normalizedPath, Instant.ofEpochMilli(connection.getLastModified()));
-		this.cacheLock.unlock();
+		metadata = GroupMetadata.fromJson(response);
+		metadataCache.put(normalizedPath, metadata);
+		return metadata;
 	}
 
+	/**
+	 * Call /api/v1/list-groups/[path] - result will be returned and stored in cache
+	 *
+	 * @param prefix path prefix
+	 * @return directory listing of that path
+	 * @throws IOException for network errors
+	 */
 	public DirectoryListing listPrefix(@NotNull String prefix) throws IOException {
 		if (getEndpointBase() == null) {
 			throw new IllegalStateException(uninitializedError);
 		}
 
 		if (borked) {
-			throw new IllegalStateException("Client initialization was unsuccessful");
+			throw new IllegalStateException(initFailedError);
+		}
+
+		/* Check cache */
+		String normalized = StringUtils.stripStart(prefix, "/");
+		DirectoryListing listing = listingCache.getOrDefault(normalized, null);
+		if (listing != null && listing.created.isAfter(Instant.now().minus(Duration.ofMinutes(10)))) {
+			this.plugin.getComponentLogger().info("Returning cached directory listing for '{}'", normalized);
+			return listing;
 		}
 
 		/* May throw MalformedURLException */
-		String normalized = StringUtils.stripStart(prefix, "/");
 		URL url = new URL(getEndpointBase() + "/v1/list-group/" + normalized);
+		this.plugin.getComponentLogger().info("Retrieving directory listing for '{}'", normalized);
 
 		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 		connection.setRequestMethod("GET");
 		connection.setDoInput(true);
 		connection.connect();
 		if (connection.getResponseCode() != 200) {
-			throw new IOException(String.format("Could not retrieve directory listing for %s: %d %s",
+			throw new IOException(String.format("Could not retrieve directory listing for '%s': %d %s",
 			                                    prefix,
 			                                    connection.getResponseCode(),
 			                                    connection.getResponseMessage()));
@@ -214,6 +241,8 @@ public class TileSetViewerClient {
 		String response = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
 		connection.disconnect();
 
-		return DirectoryListing.fromJson(response);
+		listing = DirectoryListing.fromJson(response);
+		listingCache.put(normalized, listing);
+		return listing;
 	}
 }

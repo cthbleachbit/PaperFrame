@@ -1,14 +1,20 @@
 package me.cth451.paperframe.command;
 
 import com.destroystokyo.paper.block.TargetBlockInfo;
+import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
+import com.google.common.collect.Iterables;
 import me.cth451.paperframe.PaperFramePlugin;
+import me.cth451.paperframe.command.base.IAsyncTabCompleteExecutor;
 import me.cth451.paperframe.util.IdRange;
 import me.cth451.paperframe.util.Targeting;
 import me.cth451.paperframe.util.exceptions.InvalidFrameCountException;
 import me.cth451.paperframe.util.getopt.ArgvParser;
+import me.cth451.paperframe.util.getopt.ParameterRequiredException;
 import me.cth451.paperframe.util.getopt.PrintHelpException;
 import me.cth451.paperframe.util.getopt.UnixFlagSpec;
+import me.cth451.paperframe.util.tileviewer.DirectoryListing;
 import me.cth451.paperframe.util.tileviewer.GroupMetadata;
+import net.kyori.adventure.text.Component;
 import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -19,10 +25,14 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.MapMeta;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+
+import static java.lang.Math.max;
+import static me.cth451.paperframe.util.getopt.Unescape.escape;
 
 /**
  * Place tiles one by one onto a flat rectangle of frames with top-left corner under cursor. All frames must already exist.
@@ -38,17 +48,22 @@ import java.util.Optional;
  * </ul>
  * Alternatively pass "-n tile_set_name" to fetch tile definitions from tileset viewer REST API.
  */
-public class Frame2d implements CommandExecutor {
+public class Frame2d implements CommandExecutor, IAsyncTabCompleteExecutor {
 	/**
 	 * Ref to plugin instance itself
 	 */
 	private final PaperFramePlugin plugin;
 
+	private final static UnixFlagSpec nameFlagSpec = new UnixFlagSpec("name",
+	                                                                  'n',
+	                                                                  UnixFlagSpec.FlagType.PARAMETRIZE,
+	                                                                  "name");
+
 	private final static UnixFlagSpec[] arguments = {
 			new UnixFlagSpec("height", 'h', UnixFlagSpec.FlagType.PARAMETRIZE, "height", Integer::parseUnsignedInt),
 			new UnixFlagSpec("width", 'w', UnixFlagSpec.FlagType.PARAMETRIZE, "width", Integer::parseUnsignedInt),
 			/* Future - Get map information by name */
-			new UnixFlagSpec("name", 'n', UnixFlagSpec.FlagType.PARAMETRIZE, "name"),
+			nameFlagSpec,
 	};
 
 	protected final static ArgvParser argvParser = new ArgvParser(List.of(arguments));
@@ -74,7 +89,7 @@ public class Frame2d implements CommandExecutor {
 		List<Integer> ids;
 		try {
 			parsed = argvParser.parse(List.of(argv1), id_specs);
-		} catch (IllegalArgumentException | PrintHelpException e) {
+		} catch (IllegalArgumentException | PrintHelpException | ParameterRequiredException e) {
 			player.sendMessage(ChatColor.YELLOW + e.getMessage());
 			player.sendMessage(ChatColor.YELLOW + command.getDescription());
 			player.sendMessage(command.getUsage());
@@ -87,7 +102,7 @@ public class Frame2d implements CommandExecutor {
 		if (tilesetName != null) {
 			GroupMetadata metadata;
 			try {
-				metadata = this.plugin.getTileSetViewerClient().checkCache(tilesetName);
+				metadata = this.plugin.getTileSetViewerClient().checkMetadataCache(tilesetName);
 			} catch (IllegalStateException e) {
 				player.sendMessage(ChatColor.RED + e.getMessage());
 				return true;
@@ -96,7 +111,7 @@ public class Frame2d implements CommandExecutor {
 				/* FIXME: Schedule background fetch and notify when ready */
 				String playerName = player.getName();
 				player.sendMessage(ChatColor.YELLOW + "Retrieving tileset metadata for " + tilesetName);
-				this.plugin.getTileSetViewerClient().scheduleBackgroundFetch(
+				this.plugin.getTileSetViewerClient().scheduleMetadataFetch(
 						this.plugin,
 						tilesetName,
 						(success, message) -> {
@@ -184,5 +199,47 @@ public class Frame2d implements CommandExecutor {
 		}
 
 		return true;
+	}
+
+	@Override
+	public List<AsyncTabCompleteEvent.Completion> onTabComplete(CommandSender sender, List<String> argv1p,
+	                                                            boolean lastArgComplete) {
+		List<AsyncTabCompleteEvent.Completion> completions;
+		try {
+			completions = new LinkedList<>(argvParser.tabComplete(argv1p, lastArgComplete));
+		} catch (ParameterRequiredException e) {
+			completions = new LinkedList<>();
+			if (e.getSpec().equals(nameFlagSpec)) {
+				/* Request completion via api client*/
+				DirectoryListing listing;
+				String query = lastArgComplete ? "" : Iterables.getLast(argv1p);
+				List<String> pathComponents = List.of(query.split("/", -1));
+				String partialPrefix = String.join("/", pathComponents.subList(0, max(0, pathComponents.size() - 1)));
+				String trailingComponent = pathComponents.get(max(0, pathComponents.size() - 1));
+
+				try {
+					listing = this.plugin.getTileSetViewerClient().listPrefix("%s/".formatted(partialPrefix));
+				} catch (IOException ex) {
+					this.plugin.getComponentLogger().error("Failed enumerating tile sets", ex);
+					return List.of();
+				}
+
+				String currentPath = partialPrefix.isEmpty() ? "" : partialPrefix + "/";
+				listing.directories.stream()
+				                   .filter((s) -> s.startsWith(trailingComponent))
+				                   .map((s) -> new CompletionResult(
+						                   IAsyncTabCompleteExecutor.escapeForCompletion(currentPath) + escape(s) + "/",
+						                   Component.text("subdirectory")))
+				                   .forEachOrdered(completions::add);
+				listing.tilesets.stream()
+				                .filter((s) -> s.startsWith(trailingComponent))
+				                .map((s) -> new CompletionResult(
+						                IAsyncTabCompleteExecutor.escapeForCompletion(currentPath) + escape(s),
+						                Component.text("tile set")))
+				                .forEachOrdered(completions::add);
+			}
+
+		}
+		return completions;
 	}
 }

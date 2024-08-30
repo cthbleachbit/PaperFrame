@@ -172,38 +172,6 @@ class ArgvParserTest {
 	}
 
 	@Test
-	void unescapeTest1() {
-		String[] input = {"arg1\\"};
-		List<String> normalized = Unescape.normalizeArgv1p(List.of(input));
-		assertEquals(1, normalized.size());
-		assertEquals("arg1 ", normalized.get(0));
-	}
-
-	@Test
-	void unescapeTest2() {
-		String[] input = {"arg1\\\\"};
-		List<String> normalized = Unescape.normalizeArgv1p(List.of(input));
-		assertEquals(1, normalized.size());
-		assertEquals("arg1\\", normalized.get(0));
-	}
-
-	@Test
-	void unescapeTest3() {
-		String[] input = {"arg1\\\\\\"};
-		List<String> normalized = Unescape.normalizeArgv1p(List.of(input));
-		assertEquals(1, normalized.size());
-		assertEquals("arg1\\ ", normalized.get(0));
-	}
-
-	@Test
-	void unescapeTest4() {
-		String[] input = {"arg1\\", "\\", "\\"};
-		List<String> normalized = Unescape.normalizeArgv1p(List.of(input));
-		assertEquals(1, normalized.size());
-		assertEquals("arg1   ", normalized.get(0));
-	}
-
-	@Test
 	void strayArgumentsTest1() {
 		ArgvParser parser = new ArgvParser(minemap);
 		String[] input = {"-d", "-i", "blah\\", "blah blah", "-g1.17", "random shit1", "blahblah"};

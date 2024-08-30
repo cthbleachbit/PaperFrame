@@ -1,6 +1,7 @@
 package me.cth451.paperframe.util.getopt;
 
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -99,7 +100,7 @@ public class Unescape {
 	 * @return normalized
 	 */
 	@Contract(pure = true)
-	public static List<String> normalizeArgv1p(List<String> argv1p) {
+	public static @NotNull List<String> normalizeArgv1p(@NotNull List<String> argv1p) {
 		/* Output */
 		final List<String> normalized = new LinkedList<>();
 
@@ -113,5 +114,27 @@ public class Unescape {
 		}
 
 		return normalized;
+	}
+
+	/**
+	 * tokenize the incoming buffer
+	 * <br>
+	 * If the last argument terminated with a space, split sequence will have a trailing empty string.
+	 *
+	 * @param buffer incoming command buffer
+	 * @return   backslach unescaped command
+	 */
+	@Contract(pure = true)
+	public static @NotNull List<String> tokenize(@NotNull String buffer) {
+		List<String> split = new LinkedList<>(List.of(buffer.split(" ")));
+		if (buffer.endsWith(" ")){
+			split.add("");
+		}
+		return Unescape.normalizeArgv1p(split);
+	}
+
+	@Contract(pure = true)
+	public static @NotNull String escape(@NotNull String input) {
+		return input.replaceAll(" ", "\\\\ ");
 	}
 }

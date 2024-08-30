@@ -1,5 +1,7 @@
 package me.cth451.paperframe.util.getopt;
 
+import com.google.common.collect.Iterables;
+import me.cth451.paperframe.command.base.IAsyncTabCompleteExecutor;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -90,7 +92,7 @@ public class ArgvParser {
 
 
 	@Contract(pure = true)
-	public HashMap<String, Object> parse(@NotNull List<String> argv1pWithBackslash) throws IllegalArgumentException {
+	public HashMap<String, Object> parse(@NotNull List<String> argv1pWithBackslash) throws IllegalArgumentException, PrintHelpException, ParameterRequiredException {
 		return parse(argv1pWithBackslash, null);
 	}
 
@@ -114,12 +116,13 @@ public class ArgvParser {
 	 *                            unparsed tokens are backslash-unescaped and written here.
 	 *                            If this is set to null, any unrecognized flags will cause IllegalArgumentException.
 	 * @return mapping of parsed arguments and parameters
-	 * @throws PrintHelpException if includeHelp was specified in constructor and "-h" was passed by user.
-	 * @throws IllegalArgumentException if the input string array contains unrecognized options and extraTokens is
-	 *                                  null.
+	 * @throws PrintHelpException         if includeHelp was specified in constructor and "-h" was passed by user.
+	 * @throws IllegalArgumentException   if the input string array contains unrecognized options and extraTokens is
+	 *                                    null.
+	 * @throws ParameterRequiredException if a PARAMETRIZE option requires a mandatory parameter that isn't passed
 	 */
 	public HashMap<String, Object> parse(@NotNull List<String> argv1pWithBackslash, @Nullable List<String> extraTokens)
-			throws IllegalArgumentException {
+			throws IllegalArgumentException, PrintHelpException, ParameterRequiredException {
 		List<String> argv1p = Unescape.normalizeArgv1p(argv1pWithBackslash);
 
 		// Create defaulted existence flags
@@ -166,7 +169,7 @@ public class ArgvParser {
 							}
 							ret.put(flagSpec.destination(), transformArg);
 						} else {
-							throw new IllegalArgumentException("Mandatory parameter required for --" + arg);
+							throw new ParameterRequiredException(flagSpec, true);
 						}
 					}
 				}
@@ -206,7 +209,7 @@ public class ArgvParser {
 								// Parameter is the next token
 								localArg = itr.next();
 							} else {
-								throw new IllegalArgumentException("Mandatory parameter required for -" + s);
+								throw new ParameterRequiredException(flagSpec, false);
 							}
 
 							try {
@@ -235,5 +238,55 @@ public class ArgvParser {
 		}
 
 		return ret;
+	}
+
+	/**
+	 * Provide tag completion results for command
+	 *
+	 * @param argv1pWithBackslash ordered list of arguments from argv[1] and on with no trailing empty strings
+	 * @param lastArgComplete     whether last argument is complete
+	 * @return possible completions
+	 * @throws ParameterRequiredException if the completion needs an argument for a PARAMETRIZE option
+	 */
+	public List<IAsyncTabCompleteExecutor.CompletionResult> tabComplete(@NotNull List<String> argv1pWithBackslash,
+	                                                                    boolean lastArgComplete) throws ParameterRequiredException {
+		List<String> extraTokens = new LinkedList<>();
+
+		if (!argv1pWithBackslash.isEmpty()) {
+			try {
+				/* If last arg is incomplete consider it missing - let parser figure out what to do */
+				List<String> parsableTokens =
+						argv1pWithBackslash.subList(0, argv1pWithBackslash.size() - (lastArgComplete ? 0 : 1));
+
+				/*
+				 * ParameterRequiredException to be handled by caller.
+				 * Should never see IllegalArguments as unknown tokens are stored to extraTokens.
+				 */
+				this.parse(parsableTokens, extraTokens);
+			} catch (PrintHelpException e) {
+				return List.of();
+			}
+		}
+
+		String nextToken;
+		if (!lastArgComplete) {
+			nextToken = Iterables.getLast(argv1pWithBackslash, "");
+		} else if (!extraTokens.isEmpty()) {
+			nextToken = extraTokens.get(0);
+		} else {
+			nextToken = "";
+		}
+
+		Set<IAsyncTabCompleteExecutor.CompletionResult> completions = new HashSet<>();
+		this.longLookupTable.values().stream()
+		                    .filter((f) -> ("--" + f.longArg()).startsWith(nextToken))
+		                    .map((f) -> new IAsyncTabCompleteExecutor.CompletionResult("--" + f.longArg(), null))
+		                    .forEach(completions::add);
+		this.shortLookupTable.values().stream()
+		                     .filter((f) -> ("-" + f.shortArg()).startsWith(nextToken))
+		                     .map((f) -> new IAsyncTabCompleteExecutor.CompletionResult("-" + f.shortArg(), null))
+		                     .forEach(completions::add);
+
+		return completions.stream().toList();
 	}
 }

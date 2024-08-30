@@ -4,6 +4,7 @@ import com.destroystokyo.paper.block.TargetBlockInfo;
 import me.cth451.paperframe.PaperFramePlugin;
 import me.cth451.paperframe.util.Targeting;
 import me.cth451.paperframe.util.getopt.ArgvParser;
+import me.cth451.paperframe.util.getopt.ParameterRequiredException;
 import me.cth451.paperframe.util.getopt.PrintHelpException;
 import me.cth451.paperframe.util.getopt.UnixFlagSpec;
 import org.bukkit.Bukkit;
@@ -81,7 +82,7 @@ public class FrameMapStack implements CommandExecutor {
 		List<String> extraArgs = new LinkedList<>();
 		try {
 			parsed = argvParser.parse(List.of(argv1p), extraArgs);
-		} catch (PrintHelpException e) {
+		} catch (PrintHelpException | ParameterRequiredException e) {
 			player.sendMessage(ChatColor.YELLOW + e.getMessage());
 			player.sendMessage(ChatColor.YELLOW + command.getDescription());
 			player.sendMessage(command.getUsage());

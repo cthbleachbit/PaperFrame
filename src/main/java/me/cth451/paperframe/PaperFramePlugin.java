@@ -2,6 +2,7 @@ package me.cth451.paperframe;
 
 import me.cth451.paperframe.command.*;
 import me.cth451.paperframe.dependency.DependencyManager;
+import me.cth451.paperframe.eventlistener.AsyncTabCompleteListener;
 import me.cth451.paperframe.eventlistener.FrameProtectListener;
 import me.cth451.paperframe.task.FrameHighlightTask;
 import me.cth451.paperframe.util.HighlightOptions;
@@ -41,6 +42,7 @@ public class PaperFramePlugin extends JavaPlugin {
 
 	private void registerEventListeners() {
 		getServer().getPluginManager().registerEvents(new FrameProtectListener(this), this);
+		getServer().getPluginManager().registerEvents(new AsyncTabCompleteListener(this), this);
 	}
 
 	public void startPlayerUpdate() {

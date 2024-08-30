@@ -3,6 +3,7 @@ package me.cth451.paperframe.command;
 import me.cth451.paperframe.PaperFramePlugin;
 import me.cth451.paperframe.util.Targeting;
 import me.cth451.paperframe.util.getopt.ArgvParser;
+import me.cth451.paperframe.util.getopt.ParameterRequiredException;
 import me.cth451.paperframe.util.getopt.PrintHelpException;
 import me.cth451.paperframe.util.getopt.UnixFlagSpec;
 import org.bukkit.ChatColor;
@@ -75,7 +76,7 @@ public class FrameUnmap implements CommandExecutor {
 		HashMap<String, Object> parsed;
 		try {
 			parsed = argvParser.parse(List.of(argv1p));
-		} catch (IllegalArgumentException | PrintHelpException e) {
+		} catch (IllegalArgumentException | PrintHelpException | ParameterRequiredException e) {
 			player.sendMessage(ChatColor.YELLOW + e.getMessage());
 			player.sendMessage(ChatColor.YELLOW + command.getDescription());
 			player.sendMessage(command.getUsage());

@@ -1,9 +1,11 @@
 package me.cth451.paperframe.command.base;
 
+import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
 import me.cth451.paperframe.PaperFramePlugin;
 import me.cth451.paperframe.util.Drawing;
 import me.cth451.paperframe.util.Targeting;
 import me.cth451.paperframe.util.getopt.ArgvParser;
+import me.cth451.paperframe.util.getopt.ParameterRequiredException;
 import me.cth451.paperframe.util.getopt.PrintHelpException;
 import me.cth451.paperframe.util.getopt.UnixFlagSpec;
 import org.bukkit.ChatColor;
@@ -30,7 +32,7 @@ import static me.cth451.paperframe.util.Targeting.byTargetedEntity;
  * `-w` causes the command will act on all frames within WorldEdit selection range instead of the frame under the
  * cursor. WorldEdit must be active on the server. Otherwise, the command will fail with an error message in the chat.
  */
-public abstract class ToggleCommandExecutor implements CommandExecutor {
+public abstract class ToggleCommandExecutor implements CommandExecutor, IAsyncTabCompleteExecutor {
 	protected final PaperFramePlugin plugin;
 
 	protected final static UnixFlagSpec[] arguments = {
@@ -131,7 +133,7 @@ public abstract class ToggleCommandExecutor implements CommandExecutor {
 		HashMap<String, Object> parsed;
 		try {
 			parsed = argvParser.parse(List.of(argv1));
-		} catch (IllegalArgumentException | PrintHelpException e) {
+		} catch (IllegalArgumentException | PrintHelpException | ParameterRequiredException e) {
 			player.sendMessage(ChatColor.YELLOW + e.getMessage());
 			player.sendMessage(ChatColor.YELLOW + command.getDescription());
 			player.sendMessage(command.getUsage());
@@ -178,5 +180,18 @@ public abstract class ToggleCommandExecutor implements CommandExecutor {
 		player.sendMessage(ChatColor.GREEN + fmtStatusChanged(changed, action));
 
 		return true;
+	}
+
+	@Override
+	public List<AsyncTabCompleteEvent.Completion> onTabComplete(CommandSender sender, List<String> argv1p,
+	                                                            boolean lastArgComplete) {
+		List<AsyncTabCompleteEvent.Completion> completions = new LinkedList<>();
+		try {
+			completions.addAll(argvParser.tabComplete(argv1p, lastArgComplete));
+		} catch (ParameterRequiredException e) {
+			return completions;
+		}
+
+		return completions;
 	}
 }
